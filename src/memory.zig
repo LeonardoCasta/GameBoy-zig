@@ -7,3 +7,11 @@ pub const Game = struct {
         return Game{ .game = std.mem.zeroes([1_000_000]u8) };
     }
 };
+
+pub const Ram = struct {
+    ram: [0xFFFF]u8,
+
+    pub fn init() Ram {
+        return Ram{ .ram = std.mem.zeroes([0xFFFF]u8) };
+    }
+};

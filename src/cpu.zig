@@ -119,8 +119,9 @@ pub const Cpu = struct {
         self.adc(reg.A, addend);
     }
 
-    pub fn adcL(self: *Cpu, dest: reg, addend: u16) void {
-        self._add(dest, self.reg[@intFromEnum(dest)], addend, true);
+    pub fn adcHL(self: *Cpu, dest: reg, addend: u16) void {
+        const byteAddend: u8 = @truncate(addend);
+        self._add(dest, self.reg[@intFromEnum(dest)], byteAddend, true);
     }
 
     pub fn adcA_HL(self: *Cpu, addend: u16) void {
@@ -173,28 +174,188 @@ pub const Cpu = struct {
         self.sub(reg.A, addend);
     }
 
-    pub fn subHL(self: *Cpu, dest: reg, addend: u16) void {
-        const byteAddend: u8 = @truncate(addend);
-        self._sub(dest, self.reg[@intFromEnum(dest)], byteAddend, false);
+    pub fn subHL(self: *Cpu, dest: reg, subtrahend: u16) void {
+        const byteSubtrahend: u8 = @truncate(subtrahend);
+        self._sub(dest, self.reg[@intFromEnum(dest)], byteSubtrahend, false);
     }
 
-    pub fn subA_HL(self: *Cpu, addend: u16) void {
-        self.subHL(reg.A, addend);
+    pub fn subA_HL(self: *Cpu, subtrahend: u16) void {
+        self.subHL(reg.A, subtrahend);
     }
 
-    pub fn sbc(self: *Cpu, dest: reg, addend: reg) void {
-        self._sub(dest, self.reg[@intFromEnum(dest)], self.reg[@intFromEnum(addend)], true);
+    pub fn sbc(self: *Cpu, dest: reg, subtrahend: reg) void {
+        self._sub(dest, self.reg[@intFromEnum(dest)], self.reg[@intFromEnum(subtrahend)], true);
     }
 
-    pub fn sbcA(self: *Cpu, addend: reg) void {
-        self.sbc(reg.A, addend);
+    pub fn sbcA(self: *Cpu, subtrahend: reg) void {
+        self.sbc(reg.A, subtrahend);
     }
 
-    pub fn sbcHL(self: *Cpu, dest: reg, addend: u16) void {
-        self._sub(dest, self.reg[@intFromEnum(dest)], addend, true);
+    pub fn sbcHL(self: *Cpu, dest: reg, subtrahend: u16) void {
+        const byteSubtrahend: u8 = @truncate(subtrahend);
+        self._sub(dest, self.reg[@intFromEnum(dest)], byteSubtrahend, true);
     }
 
-    pub fn sbcA_HL(self: *Cpu, addend: u16) void {
-        self.sbcHL(reg.A, addend);
+    pub fn sbcA_HL(self: *Cpu, subtrahend: u16) void {
+        self.sbcHL(reg.A, subtrahend);
+    }
+
+    //AND
+    fn _and(self: *Cpu, register: reg, first: u8, second: u8) void {
+        const result: u8 = first & second;
+
+        //Z register set to zero if result is zero
+        if (result == 0) {
+            self.setZ(0);
+        } else {
+            self.setZ(1);
+        }
+        //N set to zero
+        self.setN(0);
+        //H set if borrow from bit 4
+        self.setH(1);
+        //C set if borrow from bit seven
+        self.setC(0);
+
+        self.reg[@intFromEnum(register)] = result;
+    }
+
+    pub fn andA(self: *Cpu, second: reg) void {
+        self._and(reg.A, self.reg[@intFromEnum(reg.A)], self.reg[@intFromEnum(second)]);
+    }
+
+    pub fn andHL(self: *Cpu, dest: reg, second: u16) void {
+        const byte: u8 = @truncate(second);
+        self._and(dest, self.reg[@intFromEnum(dest)], byte);
+    }
+
+    pub fn andA_HL(self: *Cpu, second: u16) void {
+        self.andHL(reg.A, second);
+    }
+
+    //OR
+    fn _or(self: *Cpu, register: reg, first: u8, second: u8) void {
+        const result: u8 = first | second;
+
+        //Z register set to zero if result is zero
+        if (result == 0) {
+            self.setZ(0);
+        } else {
+            self.setZ(1);
+        }
+        //N set to zero
+        self.setN(0);
+        //H set if borrow from bit 4
+        self.setH(0);
+        //C set if borrow from bit seven
+        self.setC(0);
+
+        self.reg[@intFromEnum(register)] = result;
+    }
+
+    pub fn orA(self: *Cpu, second: reg) void {
+        self._and(reg.A, self.reg[@intFromEnum(reg.A)], self.reg[@intFromEnum(second)]);
+    }
+
+    pub fn orHL(self: *Cpu, dest: reg, second: u16) void {
+        const byte: u8 = @truncate(second);
+        self._and(dest, self.reg[@intFromEnum(dest)], byte);
+    }
+
+    pub fn orA_HL(self: *Cpu, second: u16) void {
+        self.andHL(reg.A, second);
+    }
+
+    //XOR
+    fn _xor(self: *Cpu, register: reg, first: u8, second: u8) void {
+        const result: u8 = first ^ second;
+
+        //Z register set to zero if result is zero
+        if (result == 0) {
+            self.setZ(0);
+        } else {
+            self.setZ(1);
+        }
+        //N set to zero
+        self.setN(0);
+        //H set if borrow from bit 4
+        self.setH(0);
+        //C set if borrow from bit seven
+        self.setC(0);
+
+        self.reg[@intFromEnum(register)] = result;
+    }
+
+    pub fn xorA(self: *Cpu, second: reg) void {
+        self._xor(reg.A, self.reg[@intFromEnum(reg.A)], self.reg[@intFromEnum(second)]);
+    }
+
+    pub fn xorHL(self: *Cpu, dest: reg, second: u16) void {
+        const byte: u8 = @truncate(second);
+        self._and(dest, self.reg[@intFromEnum(dest)], byte);
+    }
+
+    pub fn xorA_HL(self: *Cpu, second: u16) void {
+        self.xorHL(reg.A, second);
+    }
+
+    //CP
+    fn _cp(self: *Cpu, first: u8, second: u8) void {
+        const result: i16 = first - second;
+
+        //Z register set to zero if result is zero
+        if (result == 0) {
+            self.setZ(0);
+        } else {
+            self.setZ(1);
+        }
+        //N set to zero
+        self.setN(1);
+        //H set if borrow from bit 4
+        if ((first & 0x0F) < (second & 0x0F)) {
+            self.setH(1);
+        } else {
+            self.setH(0);
+        }
+        //C set if borrow from bit seven
+        if (result < 0) {
+            self.setC(1);
+        } else {
+            self.setC(0);
+        }
+    }
+
+    pub fn cp(self: *Cpu, dest: reg, addend: reg) void {
+        self._cp(dest, self.reg[@intFromEnum(dest)], self.reg[@intFromEnum(addend)], false);
+    }
+
+    pub fn cpA(self: *Cpu, addend: reg) void {
+        self.cp(reg.A, addend);
+    }
+
+    pub fn cpHL(self: *Cpu, dest: reg, subtrahend: u16) void {
+        const byteSubtrahend: u8 = @truncate(subtrahend);
+        self._cp(dest, self.reg[@intFromEnum(dest)], byteSubtrahend, false);
+    }
+
+    pub fn cpA_HL(self: *Cpu, subtrahend: u16) void {
+        self.cpHL(reg.A, subtrahend);
+    }
+
+    //LOAD
+    pub fn ld(self: *Cpu, dest: reg, source: reg) void {
+        const index = @intFromEnum(dest);
+        const value = self.reg[@intFromEnum(source)];
+        self.reg[index] = value;
+    }
+
+    pub fn ld_HL(self: *Cpu, dest: reg, value: u8) void {
+        const index = @intFromEnum(dest);
+        self.reg[index] = value;
+    }
+
+    pub fn ld_HL_reg(self: *Cpu, dest: u8, valueReg: reg) void {
+        const value = self.reg[@intFromEnum(valueReg)];
+        self.reg[dest] = value;
     }
 };

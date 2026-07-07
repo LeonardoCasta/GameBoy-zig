@@ -5,7 +5,8 @@ const reg = exe.cpuModule.reg;
 
 fn init(instruction: u8) void {
     exe.testInit();
-    exe.ram.ram[0] = instruction;
+    //exe.ram.ram[0] = instruction;
+    exe.game.game[0] = instruction;
 }
 
 //set the reg with a constant value
@@ -36,10 +37,7 @@ fn runTestR8Hl(register: reg) !void {
     setReg(reg.L, 0x02);
     exe.ram.ram[0x0502] = 0x23;
     exe.execute();
-    std.debug.print("{X} {X} \n", .{ exe.cpu.getRegister(reg.H), exe.cpu.getRegister(reg.L) });
-    std.debug.print("{X} {X} \n", .{ exe.cpu.getHL(), exe.ram.ram[0x0502] });
-    std.debug.print("register value {X} \n", .{exe.cpu.getRegister(register)});
-    try checkReg(register, 0x0);
+    try checkReg(register, 0x23);
 }
 
 test "0x40 ld b, b" {

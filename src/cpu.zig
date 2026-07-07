@@ -25,9 +25,10 @@ pub const Cpu = struct {
     }
 
     pub fn getHL(self: *Cpu) u16 {
-        const iH: u8 = IFE(reg.H);
-        const iL: u8 = IFE(reg.L);
-        const result: u16 = (self.reg[iH] << 7) | self.reg[iL];
+        const h: u16 = self.reg[IFE(reg.H)];
+        const iH: u16 = h << 8;
+        const iL: u8 = self.reg[IFE(reg.L)];
+        const result: u16 = iH | iL;
         return result;
     }
 
@@ -360,6 +361,6 @@ pub const Cpu = struct {
 
     pub fn ld_HL(self: *Cpu, register: reg, value: u8) void {
         const index = IFE(register);
-        self.reg[index] = @truncate(value);
+        self.reg[index] = value;
     }
 };

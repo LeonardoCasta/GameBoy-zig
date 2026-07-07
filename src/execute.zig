@@ -1,18 +1,26 @@
 const std = @import("std");
-const cpuModule = @import("cpu.zig");
+pub const cpuModule = @import("cpu.zig");
 const reg = @import("cpu.zig").reg;
 const memoryModule = @import("memory.zig");
 const instructionModule = @import("instructions.zig");
 
-var cpu: cpuModule.Cpu = undefined;
-var game: memoryModule.Game = undefined;
-var ram: memoryModule.Ram = undefined;
+pub var cpu: cpuModule.Cpu = undefined;
+pub var game: memoryModule.Game = undefined;
+pub var ram: memoryModule.Ram = undefined;
+
+pub fn testInit() void {
+    cpu = cpuModule.Cpu.init();
+    game = memoryModule.Game.init();
+    ram = memoryModule.Ram.init();
+    instructionModule.init();
+}
 
 pub fn init(io: std.Io) void {
     cpu = cpuModule.Cpu.init();
     game = memoryModule.Game.init();
     ram = memoryModule.Ram.init();
 
+    //when testing i dont want to load the file
     _ = std.Io.Dir.readFile(std.Io.Dir.cwd(), io, "./Games/Pokemon", &game.game) catch {
         std.debug.print("Error while opening game file\n", .{});
         return;
@@ -48,7 +56,8 @@ pub fn execute() void {
         },
         0x46 => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL(reg.B, ram.ram[hlValue]);
+            const value = ram.ram[hlValue];
+            cpu.ld_HL(reg.B, value);
         },
         0x47 => {
             cpu.ld(reg.B, reg.A);
@@ -73,7 +82,8 @@ pub fn execute() void {
         },
         0x4E => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL(reg.C, ram.ram[hlValue]);
+            const value = ram.ram[hlValue];
+            cpu.ld_HL(reg.C, value);
         },
         0x4F => {
             cpu.ld(reg.C, reg.A);
@@ -98,7 +108,8 @@ pub fn execute() void {
         },
         0x56 => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL(reg.D, ram.ram[hlValue]);
+            const value = ram.ram[hlValue];
+            cpu.ld_HL(reg.D, value);
         },
         0x57 => {
             cpu.ld(reg.D, reg.A);
@@ -123,7 +134,8 @@ pub fn execute() void {
         },
         0x5E => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL(reg.E, ram.ram[hlValue]);
+            const value = ram.ram[hlValue];
+            cpu.ld_HL(reg.E, value);
         },
         0x5F => {
             cpu.ld(reg.E, reg.A);
@@ -148,7 +160,8 @@ pub fn execute() void {
         },
         0x66 => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL(reg.H, ram.ram[hlValue]);
+            const value = ram.ram[hlValue];
+            cpu.ld_HL(reg.H, value);
         },
         0x67 => {
             cpu.ld(reg.H, reg.A);
@@ -173,99 +186,75 @@ pub fn execute() void {
         },
         0x6E => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL(reg.L, ram.ram[hlValue]);
+            const value = ram.ram[hlValue];
+            cpu.ld_HL(reg.L, value);
         },
         0x6F => {
             cpu.ld(reg.L, reg.A);
         },
         0x70 => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL_reg(hlValue, reg.B);
+            const register = cpu.getRegister(reg.B);
+            ram.ram[hlValue] = register;
         },
-        0x71 => {},
-        0x72 => {},
-        0x73 => {},
-        0x74 => {},
-        0x75 => {},
+        0x71 => {
+            const hlValue = cpu.getHL();
+            const register = cpu.getRegister(reg.C);
+            ram.ram[hlValue] = register;
+        },
+        0x72 => {
+            const hlValue = cpu.getHL();
+            const register = cpu.getRegister(reg.D);
+            ram.ram[hlValue] = register;
+        },
+        0x73 => {
+            const hlValue = cpu.getHL();
+            const register = cpu.getRegister(reg.E);
+            ram.ram[hlValue] = register;
+        },
+        0x74 => {
+            const hlValue = cpu.getHL();
+            const register = cpu.getRegister(reg.H);
+            ram.ram[hlValue] = register;
+        },
+        0x75 => {
+            const hlValue = cpu.getHL();
+            const register = cpu.getRegister(reg.L);
+            ram.ram[hlValue] = register;
+        },
         0x76 => {
             //HALT
-            cpu.ld_HL(reg.H, ram.ram[hlValue]);
         },
-        0x77 => {},
-        0x68 => {
+        0x77 => {
+            const hlValue = cpu.getHL();
+            const register = cpu.getRegister(reg.A);
+            ram.ram[hlValue] = register;
+        },
+        0x78 => {
             cpu.ld(reg.A, reg.B);
         },
-        0x69 => {
+        0x79 => {
             cpu.ld(reg.A, reg.C);
         },
-        0x6A => {
+        0x7A => {
             cpu.ld(reg.A, reg.D);
         },
-        0x6B => {
+        0x7B => {
             cpu.ld(reg.A, reg.E);
         },
-        0x6C => {
+        0x7C => {
             cpu.ld(reg.A, reg.H);
         },
-        0x6D => {
+        0x7D => {
             cpu.ld(reg.A, reg.L);
         },
-        0x6E => {
+        0x7E => {
             const hlValue = cpu.getHL();
-            cpu.ld_HL(reg.A, ram.ram[hlValue]);
+            const value = ram.ram[hlValue];
+            cpu.ld_HL(reg.A, value);
         },
         0x7F => {
             cpu.ld(reg.A, reg.A);
-        },
-        0x80 => {
-            cpu.addA(reg.B);
-        },
-        0x81 => {
-            cpu.addA(reg.C);
-        },
-        0x82 => {
-            cpu.addA(reg.D);
-        },
-        0x83 => {
-            cpu.addA(reg.E);
-        },
-        0x84 => {
-            cpu.addA(reg.H);
-        },
-        0x85 => {
-            cpu.addA(reg.L);
-        },
-        0x86 => {
-            const hlValue = cpu.getHL();
-            cpu.addA_HL(ram.ram[hlValue]);
-        },
-        0x87 => {
-            cpu.addA(reg.A);
-        },
-        0x88 => {
-            cpu.adcA(reg.B);
-        },
-        0x89 => {
-            cpu.adcA(reg.C);
-        },
-        0x8A => {
-            cpu.adcA(reg.D);
-        },
-        0x8B => {
-            cpu.adcA(reg.E);
-        },
-        0x8C => {
-            cpu.adcA(reg.H);
-        },
-        0x8D => {
-            cpu.adcA(reg.L);
-        },
-        0x8E => {
-            const hlValue = cpu.getHL();
-            cpu.adcA_HL(ram.ram[hlValue]);
-        },
-        0x8F => {
-            cpu.adcA(reg.A);
         },
         0x80 => {
             cpu.addA(reg.B);

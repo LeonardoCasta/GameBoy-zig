@@ -15,15 +15,24 @@ pub const Cpu = struct {
         return Cpu{ .SP = 0, .PC = 0, .reg = .{0} ** 8 };
     }
 
+    pub fn IFE(register: reg) u8 {
+        return @intFromEnum(register);
+    }
+
+    pub fn getRegister(self: *Cpu, register: reg) u8 {
+        const iReg = IFE(register);
+        return self.reg[iReg];
+    }
+
     pub fn getHL(self: *Cpu) u16 {
-        const iH: u8 = @intFromEnum(reg.H);
-        const iL: u8 = @intFromEnum(reg.L);
+        const iH: u8 = IFE(reg.H);
+        const iL: u8 = IFE(reg.L);
         const result: u16 = (self.reg[iH] << 7) | self.reg[iL];
         return result;
     }
 
     pub fn getC(self: *Cpu) u1 {
-        const index = @intFromEnum(reg.F);
+        const index = IFE(reg.F);
         const result: u1 = @truncate(((self.reg[index] & 0b00010000) >> 4));
         return result;
     }
@@ -326,7 +335,7 @@ pub const Cpu = struct {
     }
 
     pub fn cp(self: *Cpu, dest: reg, addend: reg) void {
-        self._cp(dest, self.reg[@intFromEnum(dest)], self.reg[@intFromEnum(addend)], false);
+        self._cp(self.reg[IFE(dest)], self.reg[IFE(addend)]);
     }
 
     pub fn cpA(self: *Cpu, addend: reg) void {
@@ -335,7 +344,7 @@ pub const Cpu = struct {
 
     pub fn cpHL(self: *Cpu, dest: reg, subtrahend: u16) void {
         const byteSubtrahend: u8 = @truncate(subtrahend);
-        self._cp(dest, self.reg[@intFromEnum(dest)], byteSubtrahend, false);
+        self._cp(self.reg[IFE(dest)], byteSubtrahend);
     }
 
     pub fn cpA_HL(self: *Cpu, subtrahend: u16) void {
@@ -345,17 +354,12 @@ pub const Cpu = struct {
     //LOAD
     pub fn ld(self: *Cpu, dest: reg, source: reg) void {
         const index = @intFromEnum(dest);
-        const value = self.reg[@intFromEnum(source)];
+        const value = self.reg[IFE(source)];
         self.reg[index] = value;
     }
 
-    pub fn ld_HL(self: *Cpu, dest: reg, value: u8) void {
-        const index = @intFromEnum(dest);
-        self.reg[index] = value;
-    }
-
-    pub fn ld_HL_reg(self: *Cpu, dest: u8, valueReg: reg) void {
-        const value = self.reg[@intFromEnum(valueReg)];
-        self.reg[dest] = value;
+    pub fn ld_HL(self: *Cpu, register: reg, value: u8) void {
+        const index = IFE(register);
+        self.reg[index] = @truncate(value);
     }
 };

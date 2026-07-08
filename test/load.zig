@@ -26,7 +26,6 @@ fn checkReg(register: reg, value: u8) !void {
 fn runTest(to: reg, from: reg) !void {
     const value: u8 = 15;
     setReg(from, value);
-    loadReg(from, to);
     exe.execute();
     try checkReg(to, value);
 }
@@ -42,7 +41,7 @@ fn runTestR8Hl(register: reg) !void {
 
 test "0x40 ld b, b" {
     init(0x40);
-    try runTest(reg.B, reg.A);
+    try runTest(reg.B, reg.B);
 }
 
 test "0x41 ld b, c" {
@@ -278,4 +277,76 @@ test "0x6E ld l, HL" {
 test "0x6F ld l, a" {
     init(0x6F);
     try runTest(reg.L, reg.A);
+}
+
+test "0x70 ld hl, b" {
+    init(0x70);
+}
+
+test "0x71 ld hl, c" {
+    init(0x71);
+}
+
+test "0x72 ld hl, d" {
+    init(0x72);
+}
+
+test "0x73 ld hl, e" {
+    init(0x73);
+}
+
+test "0x74 ld hl, h" {
+    init(0x74);
+}
+
+test "0x75 ld hl, l" {
+    init(0x75);
+}
+
+test "0x76 HALT" {
+    init(0x76);
+}
+
+test "0x77 ld hl, a" {
+    init(0x77);
+}
+
+test "0x78 ld a, b" {
+    init(0x78);
+    try runTest(reg.A, reg.B);
+}
+
+test "0x79 ld a, c" {
+    init(0x79);
+    try runTest(reg.A, reg.C);
+}
+
+test "0x7A ld a, d" {
+    init(0x7A);
+    try runTest(reg.A, reg.D);
+}
+
+test "0x7B ld a, e" {
+    init(0x7B);
+    try runTest(reg.A, reg.E);
+}
+
+test "0x7C ld a, h" {
+    init(0x7C);
+    try runTest(reg.A, reg.H);
+}
+
+test "0x7D ld a, l" {
+    init(0x7D);
+    try runTest(reg.A, reg.L);
+}
+
+test "0x7E ld a, HL" {
+    init(0x7E);
+    try runTestR8Hl(reg.A);
+}
+
+test "0x7F ld a, a" {
+    init(0x7F);
+    try runTest(reg.A, reg.A);
 }

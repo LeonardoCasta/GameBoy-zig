@@ -23,6 +23,12 @@ fn checkReg(register: reg, value: u8) !void {
     try expect(exe.cpu.reg[@intFromEnum(register)] == value);
 }
 
+fn checkHL(expectedValue: u8) !void {
+    const index = exe.cpu.getHL();
+    const value = exe.ram.ram[index];
+    try expect(value == expectedValue);
+}
+
 fn runTest(to: reg, from: reg) !void {
     const value: u8 = 15;
     setReg(from, value);
@@ -37,6 +43,15 @@ fn runTestR8Hl(register: reg) !void {
     exe.ram.ram[0x0502] = 0x23;
     exe.execute();
     try checkReg(register, 0x23);
+}
+
+//copy the value in r8 into HL
+fn runTestHLR8(register: reg) !void {
+    setReg(reg.H, 0x03);
+    setReg(reg.L, 0x04);
+    setReg(register, 0x11);
+    exe.execute();
+    try checkHL(0x11);
 }
 
 test "0x40 ld b, b" {
@@ -281,34 +296,39 @@ test "0x6F ld l, a" {
 
 test "0x70 ld hl, b" {
     init(0x70);
+    try runTestHLR8(reg.B);
 }
 
 test "0x71 ld hl, c" {
     init(0x71);
+    try runTestHLR8(reg.C);
 }
 
 test "0x72 ld hl, d" {
     init(0x72);
+    try runTestHLR8(reg.D);
 }
 
 test "0x73 ld hl, e" {
     init(0x73);
+    try runTestHLR8(reg.E);
 }
 
 test "0x74 ld hl, h" {
     init(0x74);
+    try runTestHLR8(reg.H);
 }
 
 test "0x75 ld hl, l" {
     init(0x75);
+    try runTestHLR8(reg.L);
 }
 
-test "0x76 HALT" {
-    init(0x76);
-}
+//0x76 is halt so not a load instruction
 
 test "0x77 ld hl, a" {
     init(0x77);
+    try runTestHLR8(reg.A);
 }
 
 test "0x78 ld a, b" {

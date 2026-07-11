@@ -8,10 +8,10 @@ pub const Game = struct {
     }
 };
 
-pub const Ram = struct {
-    ram: [0xFFFF]u8,
+pub const Memory = struct {
+    game: Game,
 
-    pub fn init() Ram {
-        return Ram{ .ram = std.mem.zeroes([0xFFFF]u8) };
+    pub fn init() Memory {
+        return Memory{ .game = std.mem.zeroes([0xFFFF]u8) };
     }
 };

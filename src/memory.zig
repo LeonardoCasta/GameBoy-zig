@@ -8,10 +8,33 @@ pub const Game = struct {
     }
 };
 
-pub const Memory = struct {
+pub const Ram = struct {
     game: Game,
 
-    pub fn init() Memory {
-        return Memory{ .game = std.mem.zeroes([0xFFFF]u8) };
+    pub fn init() Ram {
+        return Ram{ .game = Game.init() };
+    }
+
+    pub fn read(self: *const Ram, address: u16) u8 {
+        //here based on the value of index i need to change where to read
+        return self.game.game[@intCast(address)];
+    }
+
+    pub fn read16(self: *const Ram, address: u16) u16 {
+        //here based on the value of index i need to change where to read
+        const first: u16 = self.game.game[@intCast(address)];
+        const second: u8 = self.game.game[@intCast(address + 1)];
+        const result: u16 = (first << 8) | second;
+        return result;
+    }
+
+    pub fn write(self: *Ram, address: u16, value: u8) void {
+        //here based on the value of index i need to change where to read
+        self.game.game[@intCast(address)] = value;
+    }
+
+    pub fn write16(self: *Ram, address: u16, value: u16) void {
+        //here based on the value of index i need to change where to read
+        self.game.game[@intCast(address)] = value;
     }
 };

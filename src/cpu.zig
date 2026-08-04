@@ -1,6 +1,7 @@
 const std = @import("std");
 
 pub const reg = enum { A, F, B, C, D, E, H, L };
+pub const reg16 = enum { BC, DE, HL, SP };
 
 pub const Cpu = struct {
     reg: [8]u8,
@@ -24,12 +25,61 @@ pub const Cpu = struct {
         return self.reg[iReg];
     }
 
+    pub fn setRegister(self: *Cpu, register: reg, value: u8) void {
+        self.reg[IFE(register)] = value;
+    }
+
+    pub fn getSP(self: *Cpu) u16 {
+        return self.SP;
+    }
+
+    pub fn setSP(self: *Cpu, value: u16) void {
+        self.SP = value;
+    }
+
+    pub fn getBC(self: *Cpu) u16 {
+        const c: u16 = self.reg[IFE(reg.B)];
+        const iB: u16 = c << 8;
+        const iC: u8 = self.reg[IFE(reg.C)];
+        const result: u16 = iB | iC;
+        return result;
+    }
+
+    pub fn setBC(self: *Cpu, value: u16) void {
+        const b: u8 = @truncate((value & 0xFF00) >> 8);
+        const c: u8 = @truncate((value & 0x00FF));
+        self.reg[IFE(reg.B)] = b;
+        self.reg[IFE(reg.C)] = c;
+    }
+
+    pub fn getDE(self: *Cpu) u16 {
+        const d: u16 = self.reg[IFE(reg.D)];
+        const iD: u16 = d << 8;
+        const iE: u8 = self.reg[IFE(reg.E)];
+        const result: u16 = iD | iE;
+        return result;
+    }
+
+    pub fn setDE(self: *Cpu, value: u16) void {
+        const d: u8 = @truncate((value & 0xFF00) >> 8);
+        const e: u8 = @truncate((value & 0x00FF));
+        self.reg[IFE(reg.D)] = d;
+        self.reg[IFE(reg.E)] = e;
+    }
+
     pub fn getHL(self: *Cpu) u16 {
         const h: u16 = self.reg[IFE(reg.H)];
         const iH: u16 = h << 8;
         const iL: u8 = self.reg[IFE(reg.L)];
         const result: u16 = iH | iL;
         return result;
+    }
+
+    pub fn setHL(self: *Cpu, value: u16) void {
+        const h: u8 = @truncate((value & 0xFF00) >> 8);
+        const l: u8 = @truncate((value & 0x00FF));
+        self.reg[IFE(reg.H)] = h;
+        self.reg[IFE(reg.L)] = l;
     }
 
     pub fn getC(self: *Cpu) u1 {
@@ -357,6 +407,23 @@ pub const Cpu = struct {
         const index = @intFromEnum(dest);
         const value = self.reg[IFE(source)];
         self.reg[index] = value;
+    }
+
+    pub fn ld_r16_n16(self: *Cpu, dest: reg16, value: u16) void {
+        switch (dest) {
+            reg16.BC => {
+                self.setBC(value);
+            },
+            reg16.DE => {
+                self.setDE(value);
+            },
+            reg16.HL => {
+                self.setHL(value);
+            },
+            reg16.SP => {
+                self.setSP(value);
+            },
+        }
     }
 
     pub fn ld_HL(self: *Cpu, register: reg, value: u8) void {

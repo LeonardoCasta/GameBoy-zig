@@ -5,8 +5,7 @@ const reg = exe.cpuModule.reg;
 
 fn init(instruction: u8) void {
     exe.testInit();
-    //exe.ram.ram[0] = instruction;
-    exe.game.game[0] = instruction;
+    exe.ram.write(0, instruction);
 }
 
 //set the reg with a constant value
@@ -25,7 +24,7 @@ fn checkReg(register: reg, value: u8) !void {
 
 fn checkHL(expectedValue: u8) !void {
     const index = exe.cpu.getHL();
-    const value = exe.ram.ram[index];
+    const value = exe.ram.read(index);
     try expect(value == expectedValue);
 }
 
@@ -40,7 +39,7 @@ fn runTest(to: reg, from: reg) !void {
 fn runTestR8Hl(register: reg) !void {
     setReg(reg.H, 0x05);
     setReg(reg.L, 0x02);
-    exe.ram.ram[0x0502] = 0x23;
+    exe.ram.write(0x0502, 0x23);
     exe.execute();
     try checkReg(register, 0x23);
 }
@@ -52,6 +51,84 @@ fn runTestHLR8(register: reg) !void {
     setReg(register, 0x11);
     exe.execute();
     try checkHL(0x11);
+}
+
+fn test_r16_n16(instruction: u8) void {
+    init(instruction);
+    exe.ram.write(1, 0x11);
+    exe.ram.write(2, 0x22);
+    exe.execute();
+}
+
+// =================== LD r16 n16 ==========================
+test "0x01 LD BC, n16" {
+    test_r16_n16(0x01);
+    const result = exe.cpu.getBC();
+    try expect(result == 0x1122);
+}
+
+test "0x11 LD DE, n16" {
+    test_r16_n16(0x11);
+    const result = exe.cpu.getDE();
+    try expect(result == 0x1122);
+}
+
+test "0x21 LD HL, n16" {
+    test_r16_n16(0x21);
+    const result = exe.cpu.getHL();
+    try expect(result == 0x1122);
+}
+
+test "0x31 LD SP, n16" {
+    test_r16_n16(0x31);
+    const result = exe.cpu.getSP();
+    try expect(result == 0x1122);
+}
+
+// =================== LD r16 A ==========================
+test "0x02 LD [BC] A" {
+    init(0x02);
+    exe.cpu.setRegister(reg.A, 0x67);
+    exe.cpu.setBC(0x44);
+    var result = exe.ram.read(0x44);
+    try expect(result == 0);
+    exe.execute();
+    result = exe.ram.read(0x44);
+    try expect(result == 0x67);
+}
+test "0x12 LD [DE] A" {
+    init(0x12);
+    exe.cpu.setRegister(reg.A, 0x67);
+    exe.cpu.setDE(0x44);
+    var result = exe.ram.read(0x44);
+    try expect(result == 0);
+    exe.execute();
+    result = exe.ram.read(0x44);
+    try expect(result == 0x67);
+}
+
+test "0x22 LD [HL+] A" {
+    init(0x22);
+    exe.cpu.setRegister(reg.A, 0x67);
+    exe.cpu.setHL(0x44);
+    var result = exe.ram.read(0x44);
+    try expect(result == 0);
+    exe.execute();
+    result = exe.ram.read(0x44);
+    try expect(result == 0x67);
+    try expect(exe.cpu.getHL() == 0x45);
+}
+
+test "0x32 LD [HL-] A" {
+    init(0x32);
+    exe.cpu.setRegister(reg.A, 0x67);
+    exe.cpu.setHL(0x44);
+    var result = exe.ram.read(0x44);
+    try expect(result == 0);
+    exe.execute();
+    result = exe.ram.read(0x44);
+    try expect(result == 0x67);
+    try expect(exe.cpu.getHL() == 0x43);
 }
 
 test "0x40 ld b, b" {

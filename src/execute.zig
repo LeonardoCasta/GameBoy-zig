@@ -1,27 +1,25 @@
 const std = @import("std");
 pub const cpuModule = @import("cpu.zig");
 const reg = @import("cpu.zig").reg;
+const reg16 = @import("cpu.zig").reg16;
 const memoryModule = @import("memory.zig");
 const instructionModule = @import("instructions.zig");
 
 pub var cpu: cpuModule.Cpu = undefined;
-pub var game: memoryModule.Game = undefined;
 pub var ram: memoryModule.Ram = undefined;
 
 pub fn testInit() void {
     cpu = cpuModule.Cpu.init();
-    game = memoryModule.Game.init();
     ram = memoryModule.Ram.init();
     instructionModule.init();
 }
 
 pub fn init(io: std.Io) void {
     cpu = cpuModule.Cpu.init();
-    game = memoryModule.Game.init();
     ram = memoryModule.Ram.init();
 
     //when testing i dont want to load the file
-    _ = std.Io.Dir.readFile(std.Io.Dir.cwd(), io, "./Games/Pokemon", &game.game) catch {
+    _ = std.Io.Dir.readFile(std.Io.Dir.cwd(), io, "./Games/Pokemon", &ram.game.game) catch {
         std.debug.print("Error while opening game file\n", .{});
         return;
     };
@@ -31,18 +29,20 @@ pub fn init(io: std.Io) void {
 
 pub fn execute() void {
     //extract byte
-    const opcode: u8 = game.game[cpu.PC];
+    const opcode: u8 = ram.read(cpu.PC);
     _ = instructionModule.instructionTable[opcode];
 
     switch (opcode) {
         0x00 => {},
         0x01 => {
-            //what is n16
-            ram.ram
-            cpu.ld_r16_n16(register, value);
+            const value: u16 = ram.read16(cpu.PC + 1);
+            cpu.ld_r16_n16(reg16.BC, value);
         },
-        0x02 => {},
-        0x02 => {},
+        0x02 => {
+            const address = cpu.getBC();
+            const value = cpu.getRegister(reg.A);
+            ram.write(address, value);
+        },
         0x03 => {},
         0x04 => {},
         0x05 => {},
@@ -57,9 +57,15 @@ pub fn execute() void {
         0x0E => {},
         0x0F => {},
         0x10 => {},
-        0x11 => {},
-        0x12 => {},
-        0x12 => {},
+        0x11 => {
+            const value: u16 = ram.read16(cpu.PC + 1);
+            cpu.ld_r16_n16(reg16.DE, value);
+        },
+        0x12 => {
+            const address = cpu.getDE();
+            const value = cpu.getRegister(reg.A);
+            ram.write(address, value);
+        },
         0x13 => {},
         0x14 => {},
         0x15 => {},
@@ -74,9 +80,16 @@ pub fn execute() void {
         0x1E => {},
         0x1F => {},
         0x20 => {},
-        0x21 => {},
-        0x22 => {},
-        0x22 => {},
+        0x21 => {
+            const value: u16 = ram.read16(cpu.PC + 1);
+            cpu.ld_r16_n16(reg16.HL, value);
+        },
+        0x22 => {
+            const address = cpu.getHL();
+            const value = cpu.getRegister(reg.A);
+            ram.write(address, value);
+            cpu.setHL(address + 1);
+        },
         0x23 => {},
         0x24 => {},
         0x25 => {},
@@ -91,9 +104,16 @@ pub fn execute() void {
         0x2E => {},
         0x2F => {},
         0x30 => {},
-        0x31 => {},
-        0x32 => {},
-        0x32 => {},
+        0x31 => {
+            const value: u16 = ram.read16(cpu.PC + 1);
+            cpu.ld_r16_n16(reg16.SP, value);
+        },
+        0x32 => {
+            const address = cpu.getHL();
+            const value = cpu.getRegister(reg.A);
+            ram.write(address, value);
+            cpu.setHL(address - 1);
+        },
         0x33 => {},
         0x34 => {},
         0x35 => {},
@@ -127,7 +147,7 @@ pub fn execute() void {
         },
         0x46 => {
             const hlValue = cpu.getHL();
-            const value = ram.ram[hlValue];
+            const value = ram.read(hlValue);
             cpu.ld_HL(reg.B, value);
         },
         0x47 => {
@@ -153,7 +173,7 @@ pub fn execute() void {
         },
         0x4E => {
             const hlValue = cpu.getHL();
-            const value = ram.ram[hlValue];
+            const value = ram.read(hlValue);
             cpu.ld_HL(reg.C, value);
         },
         0x4F => {
@@ -179,7 +199,7 @@ pub fn execute() void {
         },
         0x56 => {
             const hlValue = cpu.getHL();
-            const value = ram.ram[hlValue];
+            const value = ram.read(hlValue);
             cpu.ld_HL(reg.D, value);
         },
         0x57 => {
@@ -205,7 +225,7 @@ pub fn execute() void {
         },
         0x5E => {
             const hlValue = cpu.getHL();
-            const value = ram.ram[hlValue];
+            const value = ram.read(hlValue);
             cpu.ld_HL(reg.E, value);
         },
         0x5F => {
@@ -231,7 +251,7 @@ pub fn execute() void {
         },
         0x66 => {
             const hlValue = cpu.getHL();
-            const value = ram.ram[hlValue];
+            const value = ram.read(hlValue);
             cpu.ld_HL(reg.H, value);
         },
         0x67 => {
@@ -257,7 +277,7 @@ pub fn execute() void {
         },
         0x6E => {
             const hlValue = cpu.getHL();
-            const value = ram.ram[hlValue];
+            const value = ram.read(hlValue);
             cpu.ld_HL(reg.L, value);
         },
         0x6F => {
@@ -266,32 +286,32 @@ pub fn execute() void {
         0x70 => {
             const hlValue = cpu.getHL();
             const register = cpu.getRegister(reg.B);
-            ram.ram[hlValue] = register;
+            ram.write(hlValue, register);
         },
         0x71 => {
             const hlValue = cpu.getHL();
             const register = cpu.getRegister(reg.C);
-            ram.ram[hlValue] = register;
+            ram.write(hlValue, register);
         },
         0x72 => {
             const hlValue = cpu.getHL();
             const register = cpu.getRegister(reg.D);
-            ram.ram[hlValue] = register;
+            ram.write(hlValue, register);
         },
         0x73 => {
             const hlValue = cpu.getHL();
             const register = cpu.getRegister(reg.E);
-            ram.ram[hlValue] = register;
+            ram.write(hlValue, register);
         },
         0x74 => {
             const hlValue = cpu.getHL();
             const register = cpu.getRegister(reg.H);
-            ram.ram[hlValue] = register;
+            ram.write(hlValue, register);
         },
         0x75 => {
             const hlValue = cpu.getHL();
             const register = cpu.getRegister(reg.L);
-            ram.ram[hlValue] = register;
+            ram.write(hlValue, register);
         },
         0x76 => {
             //HALT
@@ -299,7 +319,7 @@ pub fn execute() void {
         0x77 => {
             const hlValue = cpu.getHL();
             const register = cpu.getRegister(reg.A);
-            ram.ram[hlValue] = register;
+            ram.write(hlValue, register);
         },
         0x78 => {
             cpu.ld(reg.A, reg.B);
@@ -321,7 +341,7 @@ pub fn execute() void {
         },
         0x7E => {
             const hlValue = cpu.getHL();
-            const value = ram.ram[hlValue];
+            const value = ram.read(hlValue);
             cpu.ld_HL(reg.A, value);
         },
         0x7F => {
@@ -347,7 +367,7 @@ pub fn execute() void {
         },
         0x86 => {
             const hlValue = cpu.getHL();
-            cpu.addA_HL(ram.ram[hlValue]);
+            cpu.addA_HL(ram.read(hlValue));
         },
         0x87 => {
             cpu.addA(reg.A);
@@ -372,7 +392,7 @@ pub fn execute() void {
         },
         0x8E => {
             const hlValue = cpu.getHL();
-            cpu.adcA_HL(ram.ram[hlValue]);
+            cpu.adcA_HL(ram.read(hlValue));
         },
         0x8F => {
             cpu.adcA(reg.A);
@@ -397,7 +417,7 @@ pub fn execute() void {
         },
         0x96 => {
             const hlValue = cpu.getHL();
-            cpu.subA_HL(ram.ram[hlValue]);
+            cpu.subA_HL(ram.read(hlValue));
         },
         0x97 => {
             cpu.sbcA(reg.A);
@@ -422,7 +442,7 @@ pub fn execute() void {
         },
         0x9E => {
             const hlValue = cpu.getHL();
-            cpu.sbcA_HL(ram.ram[hlValue]);
+            cpu.sbcA_HL(ram.read(hlValue));
         },
         0x9F => {
             cpu.sbcA(reg.A);
@@ -447,7 +467,7 @@ pub fn execute() void {
         },
         0xA6 => {
             const hlValue = cpu.getHL();
-            cpu.andA_HL(ram.ram[hlValue]);
+            cpu.andA_HL(ram.read(hlValue));
         },
         0xA7 => {
             cpu.andA(reg.A);
@@ -472,7 +492,7 @@ pub fn execute() void {
         },
         0xAE => {
             const hlValue = cpu.getHL();
-            cpu.xorA_HL(ram.ram[hlValue]);
+            cpu.xorA_HL(ram.read(hlValue));
         },
         0xAF => {
             cpu.xorA(reg.A);
@@ -497,7 +517,7 @@ pub fn execute() void {
         },
         0xB6 => {
             const hlValue = cpu.getHL();
-            cpu.orA_HL(ram.ram[hlValue]);
+            cpu.orA_HL(ram.read(hlValue));
         },
         0xB7 => {
             cpu.orA(reg.A);
@@ -522,7 +542,7 @@ pub fn execute() void {
         },
         0xBE => {
             const hlValue = cpu.getHL();
-            cpu.cpA_HL(ram.ram[hlValue]);
+            cpu.cpA_HL(ram.read(hlValue));
         },
         0xBF => {
             cpu.cpA(reg.A);

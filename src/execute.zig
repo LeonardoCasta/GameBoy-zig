@@ -46,15 +46,25 @@ pub fn execute() void {
         0x03 => {},
         0x04 => {},
         0x05 => {},
-        0x06 => {},
+        0x06 => {
+            const value = ram.read(cpu.PC + 1);
+            cpu.setRegister(reg.B, value);
+        },
         0x07 => {},
         0x08 => {},
         0x09 => {},
-        0x0A => {},
+        0x0A => {
+            const address = cpu.getBC();
+            const value = ram.read(address);
+            cpu.setRegister(reg.A, value);
+        },
         0x0B => {},
         0x0C => {},
         0x0D => {},
-        0x0E => {},
+        0x0E => {
+            const value = ram.read(cpu.PC + 1);
+            cpu.setRegister(reg.C, value);
+        },
         0x0F => {},
         0x10 => {},
         0x11 => {
@@ -69,15 +79,25 @@ pub fn execute() void {
         0x13 => {},
         0x14 => {},
         0x15 => {},
-        0x16 => {},
+        0x16 => {
+            const value = ram.read(cpu.PC + 1);
+            cpu.setRegister(reg.D, value);
+        },
         0x17 => {},
         0x18 => {},
         0x19 => {},
-        0x1A => {},
+        0x1A => {
+            const address = cpu.getDE();
+            const value = ram.read(address);
+            cpu.setRegister(reg.A, value);
+        },
         0x1B => {},
         0x1C => {},
         0x1D => {},
-        0x1E => {},
+        0x1E => {
+            const value = ram.read(cpu.PC + 1);
+            cpu.setRegister(reg.E, value);
+        },
         0x1F => {},
         0x20 => {},
         0x21 => {
@@ -93,15 +113,26 @@ pub fn execute() void {
         0x23 => {},
         0x24 => {},
         0x25 => {},
-        0x26 => {},
+        0x26 => {
+            const value = ram.read(cpu.PC + 1);
+            cpu.setRegister(reg.H, value);
+        },
         0x27 => {},
         0x28 => {},
         0x29 => {},
-        0x2A => {},
+        0x2A => {
+            const address = cpu.getHL();
+            const value = ram.read(address);
+            cpu.setRegister(reg.A, value);
+            cpu.setHL(address + 1);
+        },
         0x2B => {},
         0x2C => {},
         0x2D => {},
-        0x2E => {},
+        0x2E => {
+            const value = ram.read(cpu.PC + 1);
+            cpu.setRegister(reg.L, value);
+        },
         0x2F => {},
         0x30 => {},
         0x31 => {
@@ -117,15 +148,27 @@ pub fn execute() void {
         0x33 => {},
         0x34 => {},
         0x35 => {},
-        0x36 => {},
+        0x36 => {
+            const value = ram.read(cpu.PC + 1);
+            const address = cpu.getHL();
+            ram.write(address, value);
+        },
         0x37 => {},
         0x38 => {},
         0x39 => {},
-        0x3A => {},
+        0x3A => {
+            const address = cpu.getHL();
+            const value = ram.read(address);
+            cpu.setRegister(reg.A, value);
+            cpu.setHL(address - 1);
+        },
         0x3B => {},
         0x3C => {},
         0x3D => {},
-        0x3E => {},
+        0x3E => {
+            const value = ram.read(cpu.PC + 1);
+            cpu.setRegister(reg.A, value);
+        },
         0x3F => {},
         0x40 => {
             cpu.ld(reg.B, reg.B);

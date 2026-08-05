@@ -131,6 +131,88 @@ test "0x32 LD [HL-] A" {
     try expect(exe.cpu.getHL() == 0x43);
 }
 
+// =================== LD r8 n8 ==========================
+fn test_r8_n8(instruction: u8, register: reg) !void {
+    init(instruction);
+    exe.ram.write(1, 0x88);
+    try expect(exe.cpu.getRegister(register) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(register) == 0x88);
+}
+
+test "LD B, n8" {
+    try test_r8_n8(0x06, reg.B);
+}
+
+test "LD D, n8" {
+    try test_r8_n8(0x16, reg.D);
+}
+
+test "LD H, n8" {
+    try test_r8_n8(0x26, reg.H);
+}
+
+test "LD C, n8" {
+    try test_r8_n8(0x0E, reg.C);
+}
+
+test "LD E, n8" {
+    try test_r8_n8(0x1E, reg.E);
+}
+
+test "LD L, n8" {
+    try test_r8_n8(0x2E, reg.L);
+}
+
+test "LD A, n8" {
+    try test_r8_n8(0x3E, reg.A);
+}
+
+// ===================== LD HL n8 ==========================
+test "LD HL, n8" {
+    init(0x36);
+    exe.ram.write(1, 0x34);
+    exe.cpu.setHL(0x56);
+    try expect(exe.ram.read(exe.cpu.getHL()) == 0);
+    exe.execute();
+    try expect(exe.ram.read(exe.cpu.getHL()) == 0x34);
+}
+
+// ===================== LD A [r16] ==========================
+fn test_A_r16() !void {
+    exe.ram.write(0x11, 0x99);
+    try expect(exe.cpu.getRegister(reg.A) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 0x99);
+}
+test "LD A, [BC]" {
+    init(0x0A);
+    exe.cpu.setBC(0x11);
+    try test_A_r16();
+}
+
+test "LD A, [DE]" {
+    init(0x1A);
+    exe.cpu.setDE(0x11);
+    try test_A_r16();
+}
+
+// ===================== LD A [HL+-] ==========================
+test "LD A, [HL+]" {
+    init(0x2A);
+    exe.cpu.setHL(0x11);
+    try test_A_r16();
+    try expect(exe.cpu.getHL() == 0x12);
+}
+
+test "LD A, [HL-]" {
+    init(0x3A);
+    exe.cpu.setHL(0x11);
+    try test_A_r16();
+    try expect(exe.cpu.getHL() == 0x10);
+}
+
+// ===================== LD ==========================
 test "0x40 ld b, b" {
     init(0x40);
     try runTest(reg.B, reg.B);

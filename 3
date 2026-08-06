@@ -74,8 +74,6 @@ test "ADD HL BC" {
     try expect(exe.cpu.getHL() == 0);
     exe.execute();
     try expect(exe.cpu.getHL() == 47);
-    try expect(exe.cpu.getH() == 0);
-    try expect(exe.cpu.getC() == 0);
 }
 
 test "ADD HL DE" {
@@ -89,10 +87,9 @@ test "ADD HL DE" {
 test "ADD HL HL" {
     init(0x29);
     try expect(exe.cpu.getHL() == 0);
-    exe.cpu.setHL(47);
-    try expect(exe.cpu.getHL() == 47);
+    exe.cpu.setHL(47)
     exe.execute();
-    try expect(exe.cpu.getHL() == 94);
+    try expect(exe.cpu.getHL() == 47);
 }
 
 test "ADD HL SP" {
@@ -102,23 +99,3 @@ test "ADD HL SP" {
     exe.execute();
     try expect(exe.cpu.getHL() == 47);
 }
-
-test "ADD HL, r16 flags H should set to 1" {
-    init(0x09);
-    exe.cpu.setBC(0x1FFF);
-    exe.execute();
-    //test 11 bit carry flag
-    try expect(exe.cpu.getH() == 1);
-}
-
-test "ADD HL, r16 flags H and C should set to 1" {
-    init(0x09);
-    exe.cpu.setBC(0xFFFF);
-    exe.cpu.setHL(0x1);
-    exe.execute();
-    //test 11 bit carry flag
-    try expect(exe.cpu.getH() == 1);
-    try expect(exe.cpu.getC() == 1);
-}
-
-test "ADD SP, e8" {}

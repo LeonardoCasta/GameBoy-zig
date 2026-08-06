@@ -82,12 +82,6 @@ pub const Cpu = struct {
         self.reg[IFE(reg.L)] = l;
     }
 
-    pub fn getC(self: *Cpu) u1 {
-        const index = IFE(reg.F);
-        const result: u1 = @truncate(((self.reg[index] & 0b00010000) >> 4));
-        return result;
-    }
-
     fn setZ(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
@@ -115,6 +109,12 @@ pub const Cpu = struct {
         }
     }
 
+    pub fn getH(self: *Cpu) u1 {
+        const index = IFE(reg.F);
+        const result: u1 = @truncate(((self.reg[index] & 0b00100000) >> 5));
+        return result;
+    }
+
     fn setC(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
@@ -122,6 +122,12 @@ pub const Cpu = struct {
         } else {
             self.reg[index] = self.reg[index] & 0b11101111;
         }
+    }
+
+    pub fn getC(self: *Cpu) u1 {
+        const index = IFE(reg.F);
+        const result: u1 = @truncate(((self.reg[index] & 0b00010000) >> 4));
+        return result;
     }
 
     //ADDITION
@@ -186,6 +192,34 @@ pub const Cpu = struct {
 
     pub fn adcA_HL(self: *Cpu, addend: u16) void {
         self.addHL(reg.A, addend);
+    }
+
+    pub fn add_HL_r16(self: *Cpu, second: u16) void {
+        const castedHL: u17 = @intCast(self.getHL());
+        const result: u17 = castedHL + second;
+        //N set to zero
+        self.setN(0);
+        //H set if overflow from bit 11
+        if (result > 0xFFF) {
+            self.setH(1);
+        } else {
+            self.setH(0);
+        }
+        //C set if overflow from bit 15
+        if (result > 0xFFFF) {
+            self.setC(1);
+        } else {
+            self.setC(0);
+        }
+
+        self.setHL(@truncate(result));
+    }
+
+    pub fn add_SP_e8(self: *Cpu, value: i8) void {
+        const iSP: i32 = @bitCast(self.getSP());
+        const iResult = iSP + @as(i32, value);
+        const uResult: u32 = @bitCast(iResult);
+        self.setSP(@intCast(uResult));
     }
 
     //SUBTRACTION

@@ -43,7 +43,10 @@ pub fn execute() void {
             const value = cpu.getRegister(reg.A);
             ram.write(address, value);
         },
-        0x03 => {},
+        0x03 => {
+            const value = cpu.getBC() + 1;
+            cpu.setBC(value);
+        },
         0x04 => {},
         0x05 => {},
         0x06 => {
@@ -52,13 +55,18 @@ pub fn execute() void {
         },
         0x07 => {},
         0x08 => {},
-        0x09 => {},
+        0x09 => {
+            cpu.add_HL_r16(cpu.getBC());
+        },
         0x0A => {
             const address = cpu.getBC();
             const value = ram.read(address);
             cpu.setRegister(reg.A, value);
         },
-        0x0B => {},
+        0x0B => {
+            const value = cpu.getBC() - 1;
+            cpu.setBC(value);
+        },
         0x0C => {},
         0x0D => {},
         0x0E => {
@@ -76,7 +84,10 @@ pub fn execute() void {
             const value = cpu.getRegister(reg.A);
             ram.write(address, value);
         },
-        0x13 => {},
+        0x13 => {
+            const value = cpu.getDE() + 1;
+            cpu.setDE(value);
+        },
         0x14 => {},
         0x15 => {},
         0x16 => {
@@ -85,13 +96,18 @@ pub fn execute() void {
         },
         0x17 => {},
         0x18 => {},
-        0x19 => {},
+        0x19 => {
+            cpu.add_HL_r16(cpu.getDE());
+        },
         0x1A => {
             const address = cpu.getDE();
             const value = ram.read(address);
             cpu.setRegister(reg.A, value);
         },
-        0x1B => {},
+        0x1B => {
+            const value = cpu.getDE() - 1;
+            cpu.setDE(value);
+        },
         0x1C => {},
         0x1D => {},
         0x1E => {
@@ -110,7 +126,10 @@ pub fn execute() void {
             ram.write(address, value);
             cpu.setHL(address + 1);
         },
-        0x23 => {},
+        0x23 => {
+            const value = cpu.getHL() + 1;
+            cpu.setHL(value);
+        },
         0x24 => {},
         0x25 => {},
         0x26 => {
@@ -119,14 +138,19 @@ pub fn execute() void {
         },
         0x27 => {},
         0x28 => {},
-        0x29 => {},
+        0x29 => {
+            cpu.add_HL_r16(cpu.getHL());
+        },
         0x2A => {
             const address = cpu.getHL();
             const value = ram.read(address);
             cpu.setRegister(reg.A, value);
             cpu.setHL(address + 1);
         },
-        0x2B => {},
+        0x2B => {
+            const value = cpu.getHL() - 1;
+            cpu.setHL(value);
+        },
         0x2C => {},
         0x2D => {},
         0x2E => {
@@ -145,7 +169,10 @@ pub fn execute() void {
             ram.write(address, value);
             cpu.setHL(address - 1);
         },
-        0x33 => {},
+        0x33 => {
+            const value = cpu.getSP() + 1;
+            cpu.setSP(value);
+        },
         0x34 => {},
         0x35 => {},
         0x36 => {
@@ -155,14 +182,19 @@ pub fn execute() void {
         },
         0x37 => {},
         0x38 => {},
-        0x39 => {},
+        0x39 => {
+            cpu.add_HL_r16(cpu.getSP());
+        },
         0x3A => {
             const address = cpu.getHL();
             const value = ram.read(address);
             cpu.setRegister(reg.A, value);
             cpu.setHL(address - 1);
         },
-        0x3B => {},
+        0x3B => {
+            const value = cpu.getSP() - 1;
+            cpu.setSP(value);
+        },
         0x3C => {},
         0x3D => {},
         0x3E => {
@@ -589,6 +621,10 @@ pub fn execute() void {
         },
         0xBF => {
             cpu.cpA(reg.A);
+        },
+        0xE8 => {
+            const e8: i8 = @bitCast(ram.read(cpu.SP + 1));
+            cpu.add_SP_e8(e8);
         },
         else => {
             std.debug.print("Instruction not recognized {}\n", .{opcode});

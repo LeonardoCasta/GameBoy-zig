@@ -100,6 +100,12 @@ pub const Cpu = struct {
         }
     }
 
+    pub fn getN(self: *Cpu) u1 {
+        const index = IFE(reg.F);
+        const result: u1 = @truncate(((self.reg[index] & 0b01000000) >> 6));
+        return result;
+    }
+
     fn setH(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
@@ -132,15 +138,15 @@ pub const Cpu = struct {
 
     //ADDITION
     fn _add(self: *Cpu, register: reg, first: u8, second: u8, addCarry: bool) void {
-        var result: u16 = first + second;
+        var result: u16 = first +% second;
         if (addCarry == true) {
-            result += self.getC();
+            result +%= self.getC();
         }
-        //Z register set to zero if result is zero
+        //Z register set if result is zero
         if (result == 0) {
-            self.setZ(0);
-        } else {
             self.setZ(1);
+        } else {
+            self.setZ(0);
         }
         //N set to zero
         self.setN(0);
@@ -196,7 +202,7 @@ pub const Cpu = struct {
 
     pub fn add_HL_r16(self: *Cpu, second: u16) void {
         const castedHL: u17 = @intCast(self.getHL());
-        const result: u17 = castedHL + second;
+        const result: u17 = castedHL +% second;
         //N set to zero
         self.setN(0);
         //H set if overflow from bit 11
@@ -215,12 +221,12 @@ pub const Cpu = struct {
         self.setHL(@truncate(result));
     }
 
-    pub fn add_SP_e8(self: *Cpu, value: i8) void {
-        const iSP: i32 = @bitCast(self.getSP());
-        const iResult = iSP + @as(i32, value);
-        const uResult: u32 = @bitCast(iResult);
-        self.setSP(@intCast(uResult));
-    }
+    //pub fn add_SP_e8(self: *Cpu, value: i8) void {
+    //    const iSP: i32 = @bitCast(self.getSP());
+    //    const iResult = iSP + @as(i32, value);
+    //    const uResult: u32 = @bitCast(iResult);
+    //    self.setSP(@intCast(uResult));
+    //}
 
     //SUBTRACTION
     fn _sub(self: *Cpu, register: reg, first: u8, second: u8, addCarry: bool) void {
@@ -228,7 +234,7 @@ pub const Cpu = struct {
         var isBorrow: bool = false;
         var result: u8 = 0;
         if (addCarry == true) {
-            subtrahend += self.getC();
+            subtrahend +%= self.getC();
         }
         if (first < subtrahend) {
             isBorrow = true;
@@ -236,11 +242,11 @@ pub const Cpu = struct {
         } else {
             result = first - subtrahend;
         }
-        //Z register set to zero if result is zero
+        //Z register set if result is zero
         if (result == 0) {
-            self.setZ(0);
-        } else {
             self.setZ(1);
+        } else {
+            self.setZ(0);
         }
         //N set to zero
         self.setN(1);
@@ -463,5 +469,123 @@ pub const Cpu = struct {
     pub fn ld_HL(self: *Cpu, register: reg, value: u8) void {
         const index = IFE(register);
         self.reg[index] = value;
+    }
+
+    //INCREMENT REG 8
+    pub fn inc(self: *Cpu, register: reg) void {
+        const uReg = IFE(register);
+        const regValue = self.reg[uReg];
+        const result = regValue +% 1;
+        if (result == 0) {
+            self.setZ(1);
+        } else {
+            self.setZ(0);
+        }
+        self.setN(0);
+        if ((regValue & 0xF) == 0xF) {
+            self.setH(1);
+        }
+        self.reg[uReg] = result;
+    }
+
+    //DECREMENT REG 8
+    pub fn dec(self: *Cpu, register: reg) void {
+        const uReg = IFE(register);
+        const regValue = self.reg[uReg];
+        const result = regValue -% 1;
+        if (result == 0) {
+            self.setZ(1);
+        } else {
+            self.setZ(0);
+        }
+        self.setN(1);
+        if ((regValue & 0xF) == 0) {
+            self.setH(1);
+        }
+        self.reg[uReg] = result;
+    }
+
+    //INC/DECREMENT HL
+    pub fn incHL(self: *Cpu, value: u8) u8 {
+        const result = value +% 1;
+        if (result == 0) {
+            self.setZ(1);
+        } else {
+            self.setZ(0);
+        }
+        self.setN(0);
+        if ((value & 0xF) == 0xF) {
+            self.setH(1);
+        }
+        return result;
+    }
+
+    pub fn decHL(self: *Cpu, value: u8) u8 {
+        const result = value -% 1;
+        if (result == 0) {
+            self.setZ(1);
+        } else {
+            self.setZ(0);
+        }
+        self.setN(0);
+        if ((value & 0xF) == 0xF) {
+            self.setH(1);
+        }
+        return result;
+    }
+
+    //DAA
+    pub fn daa(self: *Cpu) void {
+        var result: u8 = self.getRegister(reg.A);
+        if (self.getN() == 1) {
+            var adj: u16 = 0;
+            if (self.getH() == 1) {
+                adj +%= 0x6;
+            }
+            if (self.getC() == 1) {
+                adj +%= 0x60;
+            }
+            result -%= adj;
+            self.setRegister(reg.A, result);
+        } else {
+            var adj: u16 = 0;
+            if (self.getH() == 1 or
+                (self.getRegister(reg.A) & 0xF) > 0x9)
+            {
+                adj +%= 0x6;
+            }
+            if (self.getC() == 1 or
+                self.getRegister(reg.A) > 0x99)
+            {
+                adj +%= 0x60;
+            }
+            result +%= adj;
+            self.setRegister(reg.A, result);
+        }
+        if (result == 0) {
+            self.setZ(1);
+        } else {
+            self.setZ(0);
+        }
+        self.setH(0);
+    }
+
+    pub fn scf(self: *Cpu) void {
+        self.setN(0);
+        self.setH(0);
+        self.setC(1);
+    }
+
+    //pub fn cpl(self: *Cpu) void {
+    //    aaaaaaaa
+    //    self.setRegister(reg.A, self.getRegister(reg.A));
+    //    self.setN(1);
+    //    self.setH(1);
+    //}
+
+    pub fn ccf(self: *Cpu) void {
+        self.setN(0);
+        self.setH(0);
+        self.setC(self.getC() ^ 1);
     }
 };

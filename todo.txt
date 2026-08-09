@@ -1,0 +1,13 @@
+TODO list
+
+needs to implements correctly
+DAA
+SCF
+CPL
+CCF
+add sp r8
+
+
+TESTS
+all 8 bit arithmetics
+

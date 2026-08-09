@@ -538,7 +538,7 @@ pub const Cpu = struct {
     pub fn daa(self: *Cpu) void {
         var result: u8 = self.getRegister(reg.A);
         if (self.getN() == 1) {
-            var adj: u16 = 0;
+            var adj: u8 = 0;
             if (self.getH() == 1) {
                 adj +%= 0x6;
             }
@@ -548,7 +548,7 @@ pub const Cpu = struct {
             result -%= adj;
             self.setRegister(reg.A, result);
         } else {
-            var adj: u16 = 0;
+            var adj: u8 = 0;
             if (self.getH() == 1 or
                 (self.getRegister(reg.A) & 0xF) > 0x9)
             {
@@ -576,12 +576,12 @@ pub const Cpu = struct {
         self.setC(1);
     }
 
-    //pub fn cpl(self: *Cpu) void {
-    //    aaaaaaaa
-    //    self.setRegister(reg.A, self.getRegister(reg.A));
-    //    self.setN(1);
-    //    self.setH(1);
-    //}
+    pub fn cpl(self: *Cpu) void {
+        const result = self.getRegister(reg.A) ^ 0xFF;
+        self.setRegister(reg.A, result);
+        self.setN(1);
+        self.setH(1);
+    }
 
     pub fn ccf(self: *Cpu) void {
         self.setN(0);

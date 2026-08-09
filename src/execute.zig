@@ -159,9 +159,7 @@ pub fn execute() void {
         0x27 => {
             cpu.daa();
         },
-        0x28 => {
-            cpu.scf();
-        },
+        0x28 => {},
         0x29 => {
             cpu.add_HL_r16(cpu.getHL());
         },
@@ -185,7 +183,9 @@ pub fn execute() void {
             const value = ram.read(cpu.PC + 1);
             cpu.setRegister(reg.L, value);
         },
-        0x2F => {},
+        0x2F => {
+            cpu.cpl();
+        },
         0x30 => {},
         0x31 => {
             const value: u16 = ram.read16(cpu.PC + 1);
@@ -216,7 +216,9 @@ pub fn execute() void {
             const address = cpu.getHL();
             ram.write(address, value);
         },
-        0x37 => {},
+        0x37 => {
+            cpu.scf();
+        },
         0x38 => {},
         0x39 => {
             cpu.add_HL_r16(cpu.getSP());
@@ -241,7 +243,9 @@ pub fn execute() void {
             const value = ram.read(cpu.PC + 1);
             cpu.setRegister(reg.A, value);
         },
-        0x3F => {},
+        0x3F => {
+            cpu.ccf();
+        },
         0x40 => {
             cpu.ld(reg.B, reg.B);
         },
@@ -663,8 +667,8 @@ pub fn execute() void {
             cpu.cpA(reg.A);
         },
         0xE8 => {
-            const e8: i8 = @bitCast(ram.read(cpu.SP + 1));
-            cpu.add_SP_e8(e8);
+            //const e8: i8 = @bitCast(ram.read(cpu.SP + 1));
+            //cpu.add_SP_e8(e8);
         },
         else => {
             std.debug.print("Instruction not recognized {}\n", .{opcode});

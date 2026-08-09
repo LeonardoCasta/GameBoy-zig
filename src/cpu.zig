@@ -588,4 +588,59 @@ pub const Cpu = struct {
         self.setH(0);
         self.setC(self.getC() ^ 1);
     }
+
+    //ROTATIONS
+    pub fn rlc(self: *Cpu, register: reg, isRlca: bool) void {
+        var result = self.getRegister(register);
+        const bit7: u1 = @truncate((result & 0x80) >> 7);
+        result = result << 1;
+        result = result | bit7;
+        self.setC(bit7);
+        if (isRlca or result == 0) {
+            self.setZ(0);
+        }
+        self.setN(0);
+        self.setH(0);
+    }
+
+    pub fn rl(self: *Cpu, register: reg, isRla: bool) void {
+        var result = self.getRegister(register);
+        const bit7: u1 = @truncate((result & 0x80) >> 7);
+        const carry: u1 = self.getC();
+        self.setC(bit7);
+        result = result << 1;
+        result = result | carry;
+        if (isRla or result == 0) {
+            self.setZ(0);
+        }
+        self.setN(0);
+        self.setH(0);
+    }
+
+    pub fn rrc(self: *Cpu, register: reg, isRrca: bool) void {
+        var result = self.getRegister(register);
+        const bit0: u8 = (result & 0x01);
+        result = result >> 1;
+        result = result | (bit0 << 7);
+        self.setC(@truncate(bit0));
+        if (isRrca or result == 0) {
+            self.setZ(0);
+        }
+        self.setN(0);
+        self.setH(0);
+    }
+
+    pub fn rr(self: *Cpu, register: reg, isRra: bool) void {
+        var result = self.getRegister(register);
+        const carry: u1 = self.getC();
+        const bit0: u1 = @truncate((result & 0x01));
+        result = result >> 1;
+        result = result | (@as(u8, carry) << 7);
+        self.setC(bit0);
+        if (isRra or result == 0) {
+            self.setZ(0);
+        }
+        self.setN(0);
+        self.setH(0);
+    }
 };

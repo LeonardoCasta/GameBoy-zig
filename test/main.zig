@@ -5,3 +5,7 @@ comptime {
 comptime {
     _ = @import("arithmetic.zig");
 }
+
+comptime {
+    _ = @import("jump.zig");
+}

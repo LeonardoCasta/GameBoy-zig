@@ -60,29 +60,39 @@ fn test_r16_n16(instruction: u8) void {
     exe.execute();
 }
 
+test "LD [a16], SP" {
+    init(0x08);
+    exe.ram.write(1, 0x10);
+    exe.ram.write(2, 0x10);
+    exe.cpu.setSP(0x405);
+    exe.execute();
+    try expect(exe.ram.read(0x1010) == 0x5);
+    try expect(exe.ram.read(0x1011) == 0x4);
+}
+
 // =================== LD r16 n16 ==========================
 test "0x01 LD BC, n16" {
     test_r16_n16(0x01);
     const result = exe.cpu.getBC();
-    try expect(result == 0x1122);
+    try expect(result == 0x2211);
 }
 
 test "0x11 LD DE, n16" {
     test_r16_n16(0x11);
     const result = exe.cpu.getDE();
-    try expect(result == 0x1122);
+    try expect(result == 0x2211);
 }
 
 test "0x21 LD HL, n16" {
     test_r16_n16(0x21);
     const result = exe.cpu.getHL();
-    try expect(result == 0x1122);
+    try expect(result == 0x2211);
 }
 
 test "0x31 LD SP, n16" {
     test_r16_n16(0x31);
     const result = exe.cpu.getSP();
-    try expect(result == 0x1122);
+    try expect(result == 0x2211);
 }
 
 // =================== LD r16 A ==========================

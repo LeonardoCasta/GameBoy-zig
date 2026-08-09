@@ -10,4 +10,5 @@ add sp r8
 
 TESTS
 all 8 bit arithmetics
+all rotate bits instructions
 

@@ -22,9 +22,9 @@ pub const Ram = struct {
 
     pub fn read16(self: *const Ram, address: u16) u16 {
         //here based on the value of index i need to change where to read
-        const first: u16 = self.game.game[@intCast(address)];
-        const second: u8 = self.game.game[@intCast(address + 1)];
-        const result: u16 = (first << 8) | second;
+        const first: u8 = self.game.game[@intCast(address)];
+        const second: u16 = self.game.game[@intCast(address + 1)];
+        const result: u16 = (second << 8) | first;
         return result;
     }
 
@@ -33,8 +33,8 @@ pub const Ram = struct {
         self.game.game[@intCast(address)] = value;
     }
 
-    pub fn write16(self: *Ram, address: u16, value: u16) void {
-        //here based on the value of index i need to change where to read
-        self.game.game[@intCast(address)] = value;
-    }
+    //pub fn write16(self: *Ram, address: u16, value: u16) void {
+    //    //here based on the value of index i need to change where to read
+    //    self.game.game[@intCast(address)] = value;
+    //}
 };

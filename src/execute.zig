@@ -57,8 +57,17 @@ pub fn execute() void {
             const value = ram.read(cpu.PC + 1);
             cpu.setRegister(reg.B, value);
         },
-        0x07 => {},
-        0x08 => {},
+        0x07 => {
+            cpu.rlc(reg.A, true);
+        },
+        0x08 => {
+            const sp = cpu.getSP();
+            const address = ram.read16(cpu.PC + 1);
+            const first: u8 = @truncate(sp & 0xFF);
+            const second: u8 = @truncate(sp >> 8);
+            ram.write(address, first);
+            ram.write(address + 1, second);
+        },
         0x09 => {
             cpu.add_HL_r16(cpu.getBC());
         },
@@ -81,7 +90,9 @@ pub fn execute() void {
             const value = ram.read(cpu.PC + 1);
             cpu.setRegister(reg.C, value);
         },
-        0x0F => {},
+        0x0F => {
+            cpu.rrc(reg.A, true);
+        },
         0x10 => {},
         0x11 => {
             const value: u16 = ram.read16(cpu.PC + 1);
@@ -106,7 +117,9 @@ pub fn execute() void {
             const value = ram.read(cpu.PC + 1);
             cpu.setRegister(reg.D, value);
         },
-        0x17 => {},
+        0x17 => {
+            cpu.rl(reg.A, true);
+        },
         0x18 => {},
         0x19 => {
             cpu.add_HL_r16(cpu.getDE());
@@ -130,7 +143,9 @@ pub fn execute() void {
             const value = ram.read(cpu.PC + 1);
             cpu.setRegister(reg.E, value);
         },
-        0x1F => {},
+        0x1F => {
+            cpu.rr(reg.A, true);
+        },
         0x20 => {},
         0x21 => {
             const value: u16 = ram.read16(cpu.PC + 1);

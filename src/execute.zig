@@ -154,7 +154,13 @@ pub fn execute() void {
         0x1F => {
             cpu.rr(reg.A, true);
         },
-        0x20 => {},
+        0x20 => {
+            const z = cpu.getZ();
+            if (z == 0) {
+                const uJump = ram.read(cpu.PC + 1);
+                jump = @as(i32, @intCast(uJump));
+            }
+        },
         0x21 => {
             const value: u16 = ram.read16(cpu.PC + 1);
             cpu.ld_r16_n16(reg16.HL, value);
@@ -182,7 +188,13 @@ pub fn execute() void {
         0x27 => {
             cpu.daa();
         },
-        0x28 => {},
+        0x28 => {
+            const z = cpu.getZ();
+            if (z == 1) {
+                const uJump = ram.read(cpu.PC + 1);
+                jump = @as(i32, @intCast(uJump));
+            }
+        },
         0x29 => {
             cpu.add_HL_r16(cpu.getHL());
         },
@@ -209,7 +221,13 @@ pub fn execute() void {
         0x2F => {
             cpu.cpl();
         },
-        0x30 => {},
+        0x30 => {
+            const c = cpu.getC();
+            if (c == 0) {
+                const uJump = ram.read(cpu.PC + 1);
+                jump = @as(i32, @intCast(uJump));
+            }
+        },
         0x31 => {
             const value: u16 = ram.read16(cpu.PC + 1);
             cpu.ld_r16_n16(reg16.SP, value);
@@ -242,7 +260,13 @@ pub fn execute() void {
         0x37 => {
             cpu.scf();
         },
-        0x38 => {},
+        0x38 => {
+            const c = cpu.getC();
+            if (c == 1) {
+                const uJump = ram.read(cpu.PC + 1);
+                jump = @as(i32, @intCast(uJump));
+            }
+        },
         0x39 => {
             cpu.add_HL_r16(cpu.getSP());
         },

@@ -82,7 +82,7 @@ pub const Cpu = struct {
         self.reg[IFE(reg.L)] = l;
     }
 
-    fn setZ(self: *Cpu, value: u1) void {
+    pub fn setZ(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
             self.reg[index] = self.reg[index] | 0b10000000;
@@ -91,7 +91,13 @@ pub const Cpu = struct {
         }
     }
 
-    fn setN(self: *Cpu, value: u1) void {
+    pub fn getZ(self: *Cpu) u1 {
+        const index = IFE(reg.F);
+        const result: u1 = @truncate(((self.reg[index] & 0b10000000) >> 7));
+        return result;
+    }
+
+    pub fn setN(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
             self.reg[index] = self.reg[index] | 0b01000000;
@@ -106,7 +112,7 @@ pub const Cpu = struct {
         return result;
     }
 
-    fn setH(self: *Cpu, value: u1) void {
+    pub fn setH(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
             self.reg[index] = self.reg[index] | 0b00100000;
@@ -121,7 +127,7 @@ pub const Cpu = struct {
         return result;
     }
 
-    fn setC(self: *Cpu, value: u1) void {
+    pub fn setC(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
             self.reg[index] = self.reg[index] | 0b00010000;

@@ -30,6 +30,11 @@ pub fn init(io: std.Io) void {
 pub fn execute() void {
     //extract byte
     const opcode: u8 = ram.read(cpu.PC);
+    //take this one to know how much i need to jump at the second
+    //current pc + bytes for instruction + jump
+    //TODO at the end
+    //0x0010 + 2 bytes + jump -> 0x0012
+    var jump: i32 = 0;
     _ = instructionModule.instructionTable[opcode];
 
     switch (opcode) {
@@ -120,7 +125,10 @@ pub fn execute() void {
         0x17 => {
             cpu.rl(reg.A, true);
         },
-        0x18 => {},
+        0x18 => {
+            const uJump = ram.read(cpu.PC + 1);
+            jump = @as(i32, @intCast(uJump));
+        },
         0x19 => {
             cpu.add_HL_r16(cpu.getDE());
         },
@@ -689,4 +697,6 @@ pub fn execute() void {
             std.debug.print("Instruction not recognized {}\n", .{opcode});
         },
     }
+    const newAddress = @as(i32, @intCast(cpu.PC)) + jump;
+    cpu.PC = @truncate(@as(u32, @bitCast(newAddress)));
 }

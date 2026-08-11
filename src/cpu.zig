@@ -13,11 +13,19 @@ pub const Cpu = struct {
     // c carry flag
 
     pub fn init() Cpu {
-        return Cpu{ .SP = 0, .PC = 0, .reg = .{0} ** 8 };
+        return Cpu{ .SP = 0xFFFE, .PC = 0, .reg = .{0} ** 8 };
     }
 
     pub fn IFE(register: reg) u8 {
         return @intFromEnum(register);
+    }
+
+    pub fn incSP(self: *Cpu) void {
+        self.SP += 1;
+    }
+
+    pub fn decSP(self: *Cpu) void {
+        self.SP -= 1;
     }
 
     pub fn getRegister(self: *Cpu, register: reg) u8 {

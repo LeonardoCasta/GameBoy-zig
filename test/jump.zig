@@ -15,61 +15,61 @@ fn initTestJr(instruction: u8) void {
 test "JR e8" {
     initTestJr(0x18);
     exe.execute();
-    try expect(exe.cpu.PC == 10);
+    try expect(exe.cpu.PC == 12);
 }
 
 test "JR NZ, e8" {
     initTestJr(0x20);
     exe.cpu.setZ(0);
     exe.execute();
-    try expect(exe.cpu.PC == 10);
+    try expect(exe.cpu.PC == 12);
 }
 
 test "JR NZ, e8 - not jumping" {
     initTestJr(0x20);
     exe.cpu.setZ(1);
     exe.execute();
-    try expect(exe.cpu.PC == 0);
+    try expect(exe.cpu.PC == 2);
 }
 
 test "JR N, e8" {
     initTestJr(0x28);
     exe.cpu.setZ(1);
     exe.execute();
-    try expect(exe.cpu.PC == 10);
+    try expect(exe.cpu.PC == 12);
 }
 
 test "JR N, e8 - not jumping" {
     initTestJr(0x28);
     exe.cpu.setZ(0);
     exe.execute();
-    try expect(exe.cpu.PC == 0);
+    try expect(exe.cpu.PC == 2);
 }
 
 test "JR NC, e8" {
     initTestJr(0x30);
     exe.cpu.setC(0);
     exe.execute();
-    try expect(exe.cpu.PC == 10);
+    try expect(exe.cpu.PC == 12);
 }
 
 test "JR NC, e8 - not jumping" {
     initTestJr(0x30);
     exe.cpu.setC(1);
     exe.execute();
-    try expect(exe.cpu.PC == 0);
+    try expect(exe.cpu.PC == 2);
 }
 
 test "JR C, e8" {
     initTestJr(0x38);
     exe.cpu.setC(1);
     exe.execute();
-    try expect(exe.cpu.PC == 10);
+    try expect(exe.cpu.PC == 12);
 }
 
 test "JR C, e8 - not jumping" {
     initTestJr(0x38);
     exe.cpu.setC(0);
     exe.execute();
-    try expect(exe.cpu.PC == 0);
+    try expect(exe.cpu.PC == 2);
 }

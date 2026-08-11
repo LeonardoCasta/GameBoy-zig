@@ -31,9 +31,9 @@ test "INC HL" {
 
 test "INC SP" {
     init(0x33);
-    try expect(exe.cpu.getSP() == 0);
+    try expect(exe.cpu.getSP() == 0xFFFE);
     exe.execute();
-    try expect(exe.cpu.getSP() == 1);
+    try expect(exe.cpu.getSP() == 0xFFFF);
 }
 
 test "DEC BC" {

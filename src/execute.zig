@@ -35,7 +35,7 @@ pub fn execute() void {
     //TODO at the end
     //0x0010 + 2 bytes + jump -> 0x0012
     var jump: i32 = 0;
-    _ = instructionModule.instructionTable[opcode];
+    const info = instructionModule.base[opcode];
 
     switch (opcode) {
         0x00 => {},
@@ -713,14 +713,118 @@ pub fn execute() void {
         0xBF => {
             cpu.cpA(reg.A);
         },
+        0xC0 => {},
+        0xC1 => {
+            cpu.setRegister(reg.C, ram.read(cpu.SP));
+            cpu.incSP();
+            cpu.setRegister(reg.B, ram.read(cpu.SP));
+            cpu.incSP();
+        },
+        0xC2 => {},
+        0xC3 => {},
+        0xC4 => {},
+        0xC5 => {
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.B));
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.C));
+        },
+        0xC6 => {},
+        0xC7 => {},
+        0xC8 => {},
+        0xC9 => {},
+        0xCA => {},
+        0xCB => {},
+        0xCC => {},
+        0xCD => {},
+        0xCE => {},
+        0xCF => {},
+
+        0xD0 => {},
+        0xD1 => {
+            cpu.setRegister(reg.E, ram.read(cpu.SP));
+            cpu.incSP();
+            cpu.setRegister(reg.D, ram.read(cpu.SP));
+            cpu.incSP();
+        },
+        0xD2 => {},
+        0xD3 => {},
+        0xD4 => {},
+        0xD5 => {
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.D));
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.E));
+        },
+        0xD6 => {},
+        0xD7 => {},
+        0xD8 => {},
+        0xD9 => {},
+        0xDA => {},
+        0xDB => {},
+        0xDC => {},
+        0xDD => {},
+        0xDE => {},
+        0xDF => {},
+
+        0xE0 => {},
+        0xE1 => {
+            cpu.setRegister(reg.L, ram.read(cpu.SP));
+            cpu.incSP();
+            cpu.setRegister(reg.H, ram.read(cpu.SP));
+            cpu.incSP();
+        },
+        0xE2 => {},
+        0xE3 => {},
+        0xE4 => {},
+        0xE5 => {
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.H));
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.L));
+        },
+        0xE6 => {},
+        0xE7 => {},
         0xE8 => {
             //const e8: i8 = @bitCast(ram.read(cpu.SP + 1));
             //cpu.add_SP_e8(e8);
         },
-        else => {
-            std.debug.print("Instruction not recognized {}\n", .{opcode});
+        0xE9 => {},
+        0xEA => {},
+        0xEB => {},
+        0xEC => {},
+        0xED => {},
+        0xEE => {},
+        0xEF => {},
+
+        0xF0 => {},
+        0xF1 => {
+            cpu.setRegister(reg.F, ram.read(cpu.SP));
+            cpu.incSP();
+            cpu.setRegister(reg.A, ram.read(cpu.SP));
+            cpu.incSP();
+            //TODO all registers
         },
+        0xF2 => {},
+        0xF3 => {},
+        0xF4 => {},
+        0xF5 => {
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.A));
+            cpu.decSP();
+            ram.write(cpu.SP, cpu.getRegister(reg.F));
+        },
+        0xF6 => {},
+        0xF7 => {},
+        0xF8 => {},
+        0xF9 => {},
+        0xFA => {},
+        0xFB => {},
+        0xFC => {},
+        0xFD => {},
+        0xFE => {},
+        0xFF => {},
     }
-    const newAddress = @as(i32, @intCast(cpu.PC)) + jump;
+    const newAddress = @as(i32, @intCast(cpu.PC)) + jump + info.length;
     cpu.PC = @truncate(@as(u32, @bitCast(newAddress)));
 }

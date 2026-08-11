@@ -70,6 +70,35 @@ test "LD [a16], SP" {
     try expect(exe.ram.read(0x1011) == 0x4);
 }
 
+// =================== POP PUSH r16 =========================
+fn initPop(instruction: u8) void {
+    init(instruction);
+    exe.ram.write(0xFFFD, 5);
+    exe.ram.write(0xFFFC, 4);
+    exe.cpu.decSP();
+    exe.cpu.decSP();
+}
+
+test "POP BC" {
+    initPop(0xC1);
+    try expect(exe.cpu.getRegister(reg.B) == 0 and exe.cpu.getRegister(reg.C) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.C) == 4 and exe.cpu.getRegister(reg.B) == 5);
+}
+
+test "POP DE" {
+    initPop(0xD1);
+    try expect(exe.cpu.getRegister(reg.E) == 0 and exe.cpu.getRegister(reg.D) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.E) == 4 and exe.cpu.getRegister(reg.D) == 5);
+}
+
+test "POP HL" {
+    initPop(0xE1);
+    try expect(exe.cpu.getRegister(reg.L) == 0 and exe.cpu.getRegister(reg.H) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.L) == 4 and exe.cpu.getRegister(reg.H) == 5);
+}
 // =================== LD r16 n16 ==========================
 test "0x01 LD BC, n16" {
     test_r16_n16(0x01);

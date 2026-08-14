@@ -729,7 +729,9 @@ pub fn execute() void {
             cpu.decSP();
             ram.write(cpu.SP, cpu.getRegister(reg.C));
         },
-        0xC6 => {},
+        0xC6 => {
+            cpu.addA_r8(ram.read(cpu.PC + 1));
+        },
         0xC7 => {},
         0xC8 => {},
         0xC9 => {},
@@ -756,7 +758,9 @@ pub fn execute() void {
             cpu.decSP();
             ram.write(cpu.SP, cpu.getRegister(reg.E));
         },
-        0xD6 => {},
+        0xD6 => {
+            cpu.subA_r8(ram.read(cpu.PC + 1));
+        },
         0xD7 => {},
         0xD8 => {},
         0xD9 => {},
@@ -767,14 +771,23 @@ pub fn execute() void {
         0xDE => {},
         0xDF => {},
 
-        0xE0 => {},
+        0xE0 => {
+            const a8 = @as(u16, ram.read(cpu.PC + 1));
+            const address: u16 = 0xFF00 | a8;
+            const value = cpu.getRegister(reg.A);
+            ram.write(address, value);
+        },
         0xE1 => {
             cpu.setRegister(reg.L, ram.read(cpu.SP));
             cpu.incSP();
             cpu.setRegister(reg.H, ram.read(cpu.SP));
             cpu.incSP();
         },
-        0xE2 => {},
+        0xE2 => {
+            const c = @as(u16, cpu.getRegister(reg.C));
+            const address: u16 = 0xFF00 + c;
+            ram.write(address, cpu.getRegister(reg.A));
+        },
         0xE3 => {},
         0xE4 => {},
         0xE5 => {
@@ -783,21 +796,32 @@ pub fn execute() void {
             cpu.decSP();
             ram.write(cpu.SP, cpu.getRegister(reg.L));
         },
-        0xE6 => {},
+        0xE6 => {
+            cpu.andA_HL(ram.read(cpu.PC + 1));
+        },
         0xE7 => {},
         0xE8 => {
             //const e8: i8 = @bitCast(ram.read(cpu.SP + 1));
             //cpu.add_SP_e8(e8);
         },
         0xE9 => {},
-        0xEA => {},
+        0xEA => {
+            const a = cpu.getRegister(reg.A);
+            const address = ram.read16(cpu.PC + 1);
+            ram.write(address, a);
+        },
         0xEB => {},
         0xEC => {},
         0xED => {},
         0xEE => {},
         0xEF => {},
 
-        0xF0 => {},
+        0xF0 => {
+            const a8: u16 = @as(u16, ram.read(cpu.PC + 1));
+            const address: u16 = 0xFF00 | a8;
+            const value = ram.read(address);
+            cpu.setRegister(reg.A, value);
+        },
         0xF1 => {
             cpu.setRegister(reg.F, ram.read(cpu.SP));
             cpu.incSP();
@@ -805,7 +829,12 @@ pub fn execute() void {
             cpu.incSP();
             //TODO all registers
         },
-        0xF2 => {},
+        0xF2 => {
+            const c: u16 = @as(u16, cpu.getRegister(reg.C));
+            const address: u16 = 0xFF00 + c;
+            const value: u8 = ram.read(address);
+            cpu.setRegister(reg.A, value);
+        },
         0xF3 => {},
         0xF4 => {},
         0xF5 => {
@@ -814,11 +843,19 @@ pub fn execute() void {
             cpu.decSP();
             ram.write(cpu.SP, cpu.getRegister(reg.F));
         },
-        0xF6 => {},
+        0xF6 => {
+            cpu.orA_HL(ram.read(cpu.PC + 1));
+        },
         0xF7 => {},
         0xF8 => {},
-        0xF9 => {},
-        0xFA => {},
+        0xF9 => {
+            cpu.setSP(cpu.getHL());
+        },
+        0xFA => {
+            const address = ram.read16(cpu.PC + 1);
+            const value = ram.read(address);
+            cpu.setRegister(reg.A, value);
+        },
         0xFB => {},
         0xFC => {},
         0xFD => {},

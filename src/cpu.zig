@@ -90,6 +90,21 @@ pub const Cpu = struct {
         self.reg[IFE(reg.L)] = l;
     }
 
+    pub fn getAF(self: *Cpu) u16 {
+        const a: u16 = self.reg[IFE(reg.A)];
+        const iA: u16 = a << 8;
+        const iF: u8 = self.reg[IFE(reg.F)];
+        const result: u16 = iA | iF;
+        return result;
+    }
+
+    pub fn setAF(self: *Cpu, value: u16) void {
+        const a: u8 = @truncate((value & 0xFF00) >> 8);
+        const f: u8 = @truncate((value & 0x00FF));
+        self.reg[IFE(reg.A)] = a;
+        self.reg[IFE(reg.F)] = f;
+    }
+
     pub fn setZ(self: *Cpu, value: u1) void {
         const index = @intFromEnum(reg.F);
         if (value == 1) {
@@ -186,6 +201,10 @@ pub const Cpu = struct {
 
     pub fn addA(self: *Cpu, addend: reg) void {
         self.add(reg.A, addend);
+    }
+
+    pub fn addA_r8(self: *Cpu, addend: u8) void {
+        self._add(reg.A, self.reg[@intFromEnum(reg.A)], addend, false);
     }
 
     pub fn addHL(self: *Cpu, dest: reg, addend: u16) void {
@@ -288,6 +307,10 @@ pub const Cpu = struct {
         self.sub(reg.A, addend);
     }
 
+    pub fn subA_r8(self: *Cpu, addend: u8) void {
+        self._sub(reg.A, self.reg[@intFromEnum(reg.A)], addend, false);
+    }
+
     pub fn subHL(self: *Cpu, dest: reg, subtrahend: u16) void {
         const byteSubtrahend: u8 = @truncate(subtrahend);
         self._sub(dest, self.reg[@intFromEnum(dest)], byteSubtrahend, false);
@@ -338,6 +361,10 @@ pub const Cpu = struct {
         self._and(reg.A, self.reg[@intFromEnum(reg.A)], self.reg[@intFromEnum(second)]);
     }
 
+    pub fn andA_r8(self: *Cpu, second: u8) void {
+        self._and(reg.A, self.reg[@intFromEnum(reg.A)], second);
+    }
+
     pub fn andHL(self: *Cpu, dest: reg, second: u16) void {
         const byte: u8 = @truncate(second);
         self._and(dest, self.reg[@intFromEnum(dest)], byte);
@@ -368,16 +395,20 @@ pub const Cpu = struct {
     }
 
     pub fn orA(self: *Cpu, second: reg) void {
-        self._and(reg.A, self.reg[@intFromEnum(reg.A)], self.reg[@intFromEnum(second)]);
+        self._or(reg.A, self.reg[@intFromEnum(reg.A)], self.reg[@intFromEnum(second)]);
+    }
+
+    pub fn orA_r8(self: *Cpu, second: u8) void {
+        self._or(reg.A, self.reg[@intFromEnum(reg.A)], second);
     }
 
     pub fn orHL(self: *Cpu, dest: reg, second: u16) void {
         const byte: u8 = @truncate(second);
-        self._and(dest, self.reg[@intFromEnum(dest)], byte);
+        self._or(dest, self.reg[@intFromEnum(dest)], byte);
     }
 
     pub fn orA_HL(self: *Cpu, second: u16) void {
-        self.andHL(reg.A, second);
+        self.orHL(reg.A, second);
     }
 
     //XOR

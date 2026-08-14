@@ -1,5 +1,6 @@
 const std = @import("std");
 const expect = std.testing.expect;
+const reg = exe.cpuModule.reg;
 const exe = @import("execute");
 
 fn init(instruction: u8) void {
@@ -122,3 +123,81 @@ test "ADD HL, r16 flags H and C should set to 1" {
 }
 
 test "ADD SP, e8" {}
+
+//=========================== A N8  ======================
+test "ADD A, n8" {
+    init(0xC6);
+    exe.cpu.setRegister(reg.A, 11);
+    exe.ram.write(1, 30);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 41);
+}
+
+test "SUB A, n8" {
+    init(0xD6);
+    exe.cpu.setRegister(reg.A, 11);
+    exe.ram.write(1, 1);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 10);
+}
+
+test "AND A, n8" {
+    init(0xE6);
+    exe.cpu.setRegister(reg.A, 0xF0);
+    exe.ram.write(1, 0x0F);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 0);
+}
+
+test "OR A, n8" {
+    init(0xF6);
+    exe.cpu.setRegister(reg.A, 0xF0);
+    exe.ram.write(1, 0x0F);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 0xFF);
+}
+
+//=========================== arithmetic ======================
+fn addA(addend: u8) !void {
+    exe.cpu.setRegister(reg.A, 150);
+    exe.execute();
+    //std.debug.print("{}\n", .{exe.cpu.getRegister(reg.A)});
+    try expect(exe.cpu.getRegister(reg.A) == (150 + addend));
+}
+
+fn addA_r8(inst: u8, register: reg, addend: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, addend);
+    try addA(addend);
+}
+
+test "ADD A, B" {
+    try addA_r8(0x80, reg.B, 50);
+}
+
+test "ADD A, C" {
+    try addA_r8(0x81, reg.C, 50);
+}
+
+test "ADD A, D" {
+    try addA_r8(0x82, reg.D, 50);
+}
+
+test "ADD A, E" {
+    try addA_r8(0x83, reg.E, 50);
+}
+
+test "ADD A, H" {
+    try addA_r8(0x84, reg.H, 50);
+}
+
+test "ADD A, L" {
+    try addA_r8(0x85, reg.L, 50);
+}
+
+fn subA(inst: u8, sub: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(reg.A, 150);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == (150 - sub));
+}

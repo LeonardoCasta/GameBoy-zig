@@ -60,6 +60,7 @@ fn test_r16_n16(instruction: u8) void {
     exe.execute();
 }
 
+// =================== STRANGE LD INSTRUCTIONS =========================
 test "LD [a16], SP" {
     init(0x08);
     exe.ram.write(1, 0x10);
@@ -70,8 +71,78 @@ test "LD [a16], SP" {
     try expect(exe.ram.read(0x1011) == 0x4);
 }
 
+test "LD SP, HL" {
+    init(0xF9);
+    exe.cpu.setHL(0x78);
+    exe.execute();
+    try expect(exe.cpu.getSP() == 0x78);
+}
+
+test "LDH [a8], A" {
+    init(0xE0);
+    exe.cpu.setRegister(reg.A, 0x11);
+    exe.ram.write(1, 0x45);
+    try expect(exe.ram.read(0xFF45) == 0);
+    exe.execute();
+    try expect(exe.ram.read(0xFF45) == 0x11);
+}
+
+test "LDH A, [a8]" {
+    init(0xF0);
+    exe.ram.write(1, 0x45); //set low byte of address
+    exe.ram.write(0xFF45, 0x67); //set full address
+    try expect(exe.cpu.getRegister(reg.A) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 0x67);
+}
+
+test "LDH [C], A" {
+    init(0xE2);
+    exe.cpu.setRegister(reg.A, 0x89);
+    exe.cpu.setRegister(reg.C, 0x34);
+    try expect(exe.ram.read(0xFF34) == 0);
+    exe.execute();
+    try expect(exe.ram.read(0xFF34) == 0x89);
+}
+
+test "LDH A, [C]" {
+    init(0xF2);
+    exe.cpu.setRegister(reg.C, 0x34);
+    exe.ram.write(0xFF34, 0x78);
+    try expect(exe.cpu.getRegister(reg.A) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 0x78);
+}
+
+test "LD [r16], A" {
+    init(0xEA);
+    exe.cpu.setRegister(reg.A, 0x99);
+    exe.ram.write(1, 0x33);
+    exe.ram.write(2, 0x33);
+    try expect(exe.ram.read(0x3333) == 0);
+    exe.execute();
+    try expect(exe.ram.read(0x3333) == 0x99);
+}
+
+test "LD A, [r16]" {
+    init(0xFA);
+    exe.ram.write(1, 0x33);
+    exe.ram.write(2, 0x33);
+    exe.ram.write(0x3333, 0x77);
+    try expect(exe.cpu.getRegister(reg.A) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 0x77);
+}
+
 // =================== POP PUSH r16 =========================
 fn initPop(instruction: u8) void {
+    init(instruction);
+    exe.ram.write(0xFFFD, 5);
+    exe.ram.write(0xFFFC, 4);
+    exe.cpu.decSP();
+    exe.cpu.decSP();
+}
+fn initPush(instruction: u8) void {
     init(instruction);
     exe.ram.write(0xFFFD, 5);
     exe.ram.write(0xFFFC, 4);
@@ -99,6 +170,48 @@ test "POP HL" {
     exe.execute();
     try expect(exe.cpu.getRegister(reg.L) == 4 and exe.cpu.getRegister(reg.H) == 5);
 }
+
+test "POP AF" {
+    initPop(0xF1);
+    try expect(exe.cpu.getRegister(reg.F) == 0 and exe.cpu.getRegister(reg.A) == 0);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.F) == 4 and exe.cpu.getRegister(reg.A) == 5);
+}
+
+fn testPush() !void {
+    try expect(exe.cpu.SP == 0xFFFE);
+    exe.execute();
+    try expect(exe.ram.read(0xFFFD) == 0x44);
+    try expect(exe.ram.read(0xFFFC) == 0x55);
+    try expect(exe.cpu.SP == 0xFFFC);
+}
+
+test "PUSH BC" {
+    init(0xC5);
+    exe.cpu.setBC(0x4455);
+    try expect(exe.cpu.getRegister(reg.B) == 0x44 and exe.cpu.getRegister(reg.C) == 0x55);
+    try testPush();
+}
+test "PUSH DE" {
+    init(0xD5);
+    exe.cpu.setDE(0x4455);
+    try expect(exe.cpu.getRegister(reg.D) == 0x44 and exe.cpu.getRegister(reg.E) == 0x55);
+    try testPush();
+}
+test "PUSH HL" {
+    init(0xE5);
+    exe.cpu.setHL(0x4455);
+    try expect(exe.cpu.getRegister(reg.H) == 0x44 and exe.cpu.getRegister(reg.L) == 0x55);
+    try testPush();
+}
+
+test "PUSH AF" {
+    init(0xF5);
+    exe.cpu.setAF(0x4455);
+    try expect(exe.cpu.getRegister(reg.A) == 0x44 and exe.cpu.getRegister(reg.F) == 0x55);
+    try testPush();
+}
+
 // =================== LD r16 n16 ==========================
 test "0x01 LD BC, n16" {
     test_r16_n16(0x01);

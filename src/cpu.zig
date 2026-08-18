@@ -167,10 +167,12 @@ pub const Cpu = struct {
 
     //ADDITION
     fn _add(self: *Cpu, register: reg, first: u8, second: u8, addCarry: bool) void {
-        var result: u16 = first +% second;
-        if (addCarry == true) {
-            result +%= self.getC();
-        }
+        //std.debug.print("first {} second {}\n", .{ first, second });
+        const carry: u8 = if (addCarry) 1 else 0;
+        //std.debug.print("carry {}\n", .{carry});
+        const sum: u16 = @as(u16, first) + @as(u16, second) + carry;
+        const result: u8 = @truncate(sum);
+
         //Z register set if result is zero
         if (result == 0) {
             self.setZ(1);
@@ -180,19 +182,20 @@ pub const Cpu = struct {
         //N set to zero
         self.setN(0);
         //H set if overflow from bit 3
-        if (result > 15) {
+        const halfSum: u8 = (first & 0x0F) + (second & 0x0F) + carry;
+        if (halfSum > 0xF) {
             self.setH(1);
         } else {
             self.setH(0);
         }
         //C set overflow from bit seven
-        if (result > 255) {
+        if (sum > 0xFF) {
             self.setC(1);
         } else {
             self.setC(0);
         }
-
-        self.reg[@intFromEnum(register)] = @truncate(result);
+        //std.debug.print("result {}\n", .{result});
+        self.reg[@intFromEnum(register)] = result;
     }
 
     pub fn add(self: *Cpu, dest: reg, addend: reg) void {
@@ -212,6 +215,11 @@ pub const Cpu = struct {
         self._add(dest, self.reg[@intFromEnum(dest)], byteAddend, false);
     }
 
+    pub fn adcHL(self: *Cpu, dest: reg, addend: u16) void {
+        const byteAddend: u8 = @truncate(addend);
+        self._add(dest, self.reg[@intFromEnum(dest)], byteAddend, true);
+    }
+
     pub fn addA_HL(self: *Cpu, addend: u16) void {
         self.addHL(reg.A, addend);
     }
@@ -224,13 +232,8 @@ pub const Cpu = struct {
         self.adc(reg.A, addend);
     }
 
-    pub fn adcHL(self: *Cpu, dest: reg, addend: u16) void {
-        const byteAddend: u8 = @truncate(addend);
-        self._add(dest, self.reg[@intFromEnum(dest)], byteAddend, true);
-    }
-
     pub fn adcA_HL(self: *Cpu, addend: u16) void {
-        self.addHL(reg.A, addend);
+        self.adcHL(reg.A, addend);
     }
 
     pub fn add_HL_r16(self: *Cpu, second: u16) void {

@@ -161,14 +161,65 @@ test "OR A, n8" {
 fn addA(addend: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
     exe.execute();
-    //std.debug.print("{}\n", .{exe.cpu.getRegister(reg.A)});
-    try expect(exe.cpu.getRegister(reg.A) == (150 + addend));
+    const result: u8 = 150 +% addend;
+    try expect(exe.cpu.getRegister(reg.A) == result);
+}
+
+fn adcA(addend: u8) !void {
+    exe.cpu.setRegister(reg.A, 150);
+    exe.cpu.setC(1);
+    exe.execute();
+    const result: u8 = 150 +% addend +% 1;
+    //std.debug.print("reslt {} reg {}\n", .{ result, exe.cpu.getRegister(reg.A) });
+    try expect(exe.cpu.getRegister(reg.A) == result);
 }
 
 fn addA_r8(inst: u8, register: reg, addend: u8) !void {
     init(inst);
     exe.cpu.setRegister(register, addend);
     try addA(addend);
+}
+
+fn adcA_r8(inst: u8, register: reg, addend: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, addend);
+    try adcA(addend);
+}
+
+test "ADC A, B" {
+    try adcA_r8(0x88, reg.B, 50);
+}
+
+test "ADC A, C" {
+    try adcA_r8(0x89, reg.C, 50);
+}
+
+test "ADC A, D" {
+    try adcA_r8(0x8A, reg.D, 50);
+}
+
+test "ADC A, E" {
+    try adcA_r8(0x8B, reg.E, 50);
+}
+
+test "ADC A, H" {
+    try adcA_r8(0x8C, reg.H, 50);
+}
+
+test "ADC A, L" {
+    try adcA_r8(0x8D, reg.L, 50);
+}
+
+test "ADC A, [HL]" {
+    init(0x8E);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 30);
+    try adcA(30);
+}
+
+test "ADC A, A" {
+    init(0x8F);
+    try adcA(150);
 }
 
 test "ADD A, B" {
@@ -193,6 +244,32 @@ test "ADD A, H" {
 
 test "ADD A, L" {
     try addA_r8(0x85, reg.L, 50);
+}
+
+test "ADD A, [HL]" {
+    init(0x86);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 30);
+    try addA(30);
+}
+
+test "ADD A, A" {
+    init(0x87);
+    try addA(150);
+    try expect(exe.cpu.getZ() == 0);
+    try expect(exe.cpu.getN() == 0);
+    try expect(exe.cpu.getH() == 0);
+    try expect(exe.cpu.getC() == 1);
+}
+
+test "ADD A, L - test reg c" {
+    try addA_r8(0x85, reg.L, 0xFF);
+    try expect(exe.cpu.getH() == 1);
+}
+
+test "ADD A, L - test reg z" {
+    try addA_r8(0x85, reg.L, 106);
+    try expect(exe.cpu.getZ() == 1);
 }
 
 fn subA(inst: u8, sub: u8) !void {

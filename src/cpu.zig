@@ -7,13 +7,14 @@ pub const Cpu = struct {
     reg: [8]u8,
     SP: u16,
     PC: u16,
+    ime: bool,
     // z -> zero flag
     // n subtraction flag
     // h half carry flah
     // c carry flag
 
     pub fn init() Cpu {
-        return Cpu{ .SP = 0xFFFE, .PC = 0, .reg = .{0} ** 8 };
+        return Cpu{ .SP = 0xFFFE, .PC = 0, .reg = .{0} ** 8, .ime = false };
     }
 
     pub fn IFE(register: reg) u8 {

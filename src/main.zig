@@ -13,8 +13,11 @@ pub fn main(init: std.process.Init) void {
     const io = init.io;
     exec.init(io);
 
+    //boot sequence
+    //try boot.boot();
+
     while (!ray.WindowShouldClose()) {
-        //do emulator related things
+        //execute instruction
         exec.execute();
         return;
 

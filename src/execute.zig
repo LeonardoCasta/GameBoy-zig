@@ -30,12 +30,7 @@ pub fn init(io: std.Io) void {
 }
 
 pub fn execute() void {
-    //extract byte
     var opcode: u8 = ram.read(cpu.PC);
-    //take this one to know how much i need to jump at the second
-    //current pc + bytes for instruction + jump
-    //TODO at the end
-    //0x0010 + 2 bytes + jump -> 0x0012
     var jump: i32 = 0;
     const info = instructionModule.base[opcode];
 
@@ -725,8 +720,9 @@ pub fn execute() void {
                 cpu.incSP();
                 const second: u16 = @as(u16, ram.read(cpu.SP));
                 cpu.incSP();
-                const result: u16 = first << 8 & second;
+                const result: u16 = first << 8 | second;
                 cpu.PC = result;
+                isJp = true;
             }
         },
         0xC1 => {
@@ -761,6 +757,7 @@ pub fn execute() void {
 
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
+                isJp = true;
             }
         },
         0xC5 => {
@@ -772,7 +769,10 @@ pub fn execute() void {
         0xC6 => {
             cpu.addA_r8(ram.read(cpu.PC + 1));
         },
-        0xC7 => {},
+        0xC7 => {
+            rst(&cpu, 0x0);
+            isJp = true;
+        },
         0xC8 => {
             const z = cpu.getZ();
             if (z == 1) {
@@ -814,6 +814,7 @@ pub fn execute() void {
 
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
+                isJp = true;
             }
         },
         0xCD => {
@@ -827,10 +828,15 @@ pub fn execute() void {
 
             const newAddress: u16 = ram.read16(cpu.PC + 1);
             cpu.PC = newAddress;
+            isJp = true;
         },
-        0xCE => {},
-        0xCF => {},
-
+        0xCE => {
+            cpu.addA_r8(ram.read(cpu.PC + 1));
+        },
+        0xCF => {
+            rst(&cpu, 0x8);
+            isJp = true;
+        },
         0xD0 => {
             const c = cpu.getC();
             if (c == 0) {
@@ -840,6 +846,7 @@ pub fn execute() void {
                 cpu.incSP();
                 const result: u16 = first << 8 & second;
                 cpu.PC = result;
+                isJp = true;
             }
         },
         0xD1 => {
@@ -870,6 +877,7 @@ pub fn execute() void {
 
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
+                isJp = true;
             }
         },
         0xD5 => {
@@ -881,7 +889,10 @@ pub fn execute() void {
         0xD6 => {
             cpu.subA_r8(ram.read(cpu.PC + 1));
         },
-        0xD7 => {},
+        0xD7 => {
+            rst(&cpu, 0x10);
+            isJp = true;
+        },
         0xD8 => {
             const c = cpu.getC();
             if (c == 1) {
@@ -891,6 +902,7 @@ pub fn execute() void {
                 cpu.incSP();
                 const result: u16 = first << 8 & second;
                 cpu.PC = result;
+                isJp = true;
             }
         },
         0xD9 => {
@@ -902,6 +914,7 @@ pub fn execute() void {
             cpu.incSP();
             const result: u16 = first << 8 & second;
             cpu.PC = result;
+            isJp = true;
         },
         0xDA => {
             const c = cpu.getC();
@@ -925,11 +938,17 @@ pub fn execute() void {
 
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
+                isJp = true;
             }
         },
         0xDD => {},
-        0xDE => {},
-        0xDF => {},
+        0xDE => {
+            cpu.sbcA_r8(ram.read(cpu.PC + 1));
+        },
+        0xDF => {
+            rst(&cpu, 0x18);
+            isJp = true;
+        },
 
         0xE0 => {
             const a8 = @as(u16, ram.read(cpu.PC + 1));
@@ -957,9 +976,12 @@ pub fn execute() void {
             ram.write(cpu.SP, cpu.getRegister(reg.L));
         },
         0xE6 => {
-            cpu.andA_HL(ram.read(cpu.PC + 1));
+            cpu.andA_r8(ram.read(cpu.PC + 1));
         },
-        0xE7 => {},
+        0xE7 => {
+            rst(&cpu, 0x20);
+            isJp = true;
+        },
         0xE8 => {
             //const e8: i8 = @bitCast(ram.read(cpu.SP + 1));
             //cpu.add_SP_e8(e8);
@@ -977,8 +999,13 @@ pub fn execute() void {
         0xEB => {},
         0xEC => {},
         0xED => {},
-        0xEE => {},
-        0xEF => {},
+        0xEE => {
+            cpu.xorA_r8(ram.read(cpu.PC + 1));
+        },
+        0xEF => {
+            rst(&cpu, 0x28);
+            isJp = true;
+        },
 
         0xF0 => {
             const a8: u16 = @as(u16, ram.read(cpu.PC + 1));
@@ -1010,9 +1037,12 @@ pub fn execute() void {
             ram.write(cpu.SP, cpu.getRegister(reg.F));
         },
         0xF6 => {
-            cpu.orA_HL(ram.read(cpu.PC + 1));
+            cpu.orA_r8(ram.read(cpu.PC + 1));
         },
-        0xF7 => {},
+        0xF7 => {
+            rst(&cpu, 0x30);
+            isJp = true;
+        },
         0xF8 => {},
         0xF9 => {
             cpu.setSP(cpu.getHL());
@@ -1027,8 +1057,13 @@ pub fn execute() void {
         },
         0xFC => {},
         0xFD => {},
-        0xFE => {},
-        0xFF => {},
+        0xFE => {
+            cpu.cpA_r8(ram.read(cpu.PC + 1));
+        },
+        0xFF => {
+            rst(&cpu, 0x38);
+            isJp = true;
+        },
     }
     if (ei == 0) {} else if (ei == 1) {
         cpu.ime = true;
@@ -1043,4 +1078,16 @@ pub fn execute() void {
         const newAddress = @as(i32, @intCast(cpu.PC)) + jump + info.length;
         cpu.PC = @truncate(@as(u32, @bitCast(newAddress)));
     }
+}
+
+fn rst(cpuRef: *cpuModule.Cpu, value: u16) void {
+    const addressToBePushed: u16 = cpu.PC + 1;
+    const first: u8 = @truncate(addressToBePushed & 0xFF00); //high bits
+    const second: u8 = @truncate((addressToBePushed & 0x00FF) >> 8); //low bits
+    cpuRef.decSP();
+    ram.write(cpu.SP, first);
+    cpuRef.decSP();
+    ram.write(cpu.SP, second);
+
+    cpuRef.PC = value;
 }

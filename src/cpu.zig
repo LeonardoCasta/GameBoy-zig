@@ -233,6 +233,10 @@ pub const Cpu = struct {
         self.adc(reg.A, addend);
     }
 
+    pub fn adcA_r8(self: *Cpu, addend: u8) void {
+        self._add(reg.A, self.reg[@intFromEnum(reg.A)], addend, true);
+    }
+
     pub fn adcA_HL(self: *Cpu, addend: u16) void {
         self.adcHL(reg.A, addend);
     }
@@ -341,6 +345,10 @@ pub const Cpu = struct {
         self.sbcHL(reg.A, subtrahend);
     }
 
+    pub fn sbcA_r8(self: *Cpu, addend: u8) void {
+        self._sub(reg.A, self.reg[@intFromEnum(reg.A)], addend, true);
+    }
+
     //AND
     fn _and(self: *Cpu, register: reg, first: u8, second: u8) void {
         const result: u8 = first & second;
@@ -439,6 +447,10 @@ pub const Cpu = struct {
         self._xor(reg.A, self.reg[@intFromEnum(reg.A)], self.reg[@intFromEnum(second)]);
     }
 
+    pub fn xorA_r8(self: *Cpu, second: u8) void {
+        self._xor(reg.A, self.reg[@intFromEnum(reg.A)], second);
+    }
+
     pub fn xorHL(self: *Cpu, dest: reg, second: u16) void {
         const byte: u8 = @truncate(second);
         self._and(dest, self.reg[@intFromEnum(dest)], byte);
@@ -480,6 +492,10 @@ pub const Cpu = struct {
 
     pub fn cpA(self: *Cpu, addend: reg) void {
         self.cp(reg.A, addend);
+    }
+
+    pub fn cpA_r8(self: *Cpu, addend: u8) void {
+        self._cp(self.reg[IFE(reg.A)], addend);
     }
 
     pub fn cpHL(self: *Cpu, dest: reg, subtrahend: u16) void {

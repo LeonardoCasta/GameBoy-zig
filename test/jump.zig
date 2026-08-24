@@ -176,10 +176,6 @@ test "RST 38" {
 }
 
 //============== RET ===============
-//pop pc
-//saves what is in the sp to pc
-//first to low then the higher
-//ld c then p, not literally
 fn initRet(inst: u8) void {
     init(inst);
     exe.ram.write(0xFFFD, 0x04);
@@ -203,14 +199,103 @@ test "RET NZ - no ret" {
 
 test "RET Z" {
     initRet(0xC8);
+    exe.cpu.setZ(1);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x504);
+}
+
+test "RET Z - no ret" {
+    initRet(0xC8);
     exe.cpu.setZ(0);
     exe.execute();
     try expect(exe.cpu.PC == 1);
 }
 
-test "RET Z - no ret" {
-    initRet(0xC8);
+//============== CALL ===============
+//save instruction after in stack
+//put PC equals to n16
+fn initCall(inst: u8) void {
+    init(inst);
+    exe.ram.write(1, 0x06);
+    exe.ram.write(2, 0x07);
+}
+
+test "CALL a16" {
+    initCall(0xCD);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x0706);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 3);
+}
+
+test "CALL NZ, a16" {
+    initCall(0xC4);
+    exe.cpu.setZ(0);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x706);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 3);
+}
+
+test "CALL NZ, a16 - not exec" {
+    initCall(0xC4);
     exe.cpu.setZ(1);
     exe.execute();
-    try expect(exe.cpu.PC == 0x504);
+    try expect(exe.cpu.PC == 0x3);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 0);
+}
+
+test "CALL Z, a16" {
+    initCall(0xCC);
+    exe.cpu.setZ(1);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x0706);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 3);
+}
+
+test "CALL Z, a16 - not exec" {
+    initCall(0xCC);
+    exe.cpu.setZ(0);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x3);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 0);
+}
+
+test "CALL NC, a16" {
+    initCall(0xD4);
+    exe.cpu.setC(0);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x0706);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 3);
+}
+
+test "CALL NC, a16 - not exec" {
+    initCall(0xD4);
+    exe.cpu.setC(1);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x3);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 0);
+}
+
+test "CALL C, a16" {
+    initCall(0xDC);
+    exe.cpu.setC(1);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x0706);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 3);
+}
+
+test "CALL C, a16 - not exec" {
+    initCall(0xDC);
+    exe.cpu.setC(0);
+    exe.execute();
+    try expect(exe.cpu.PC == 0x3);
+    try expect(exe.ram.read(0xFFFD) == 0);
+    try expect(exe.ram.read(0xFFFC) == 0);
 }

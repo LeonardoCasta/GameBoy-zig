@@ -262,12 +262,12 @@ pub const Cpu = struct {
         self.setHL(@truncate(result));
     }
 
-    //pub fn add_SP_e8(self: *Cpu, value: i8) void {
-    //    const iSP: i32 = @bitCast(self.getSP());
-    //    const iResult = iSP + @as(i32, value);
-    //    const uResult: u32 = @bitCast(iResult);
-    //    self.setSP(@intCast(uResult));
-    //}
+    pub fn add_SP_e8(self: *Cpu, value: i8) void {
+        const iSP: i32 = @intCast(self.getSP());
+        const iResult = iSP +% value;
+        const uResult: u16 = @truncate(iResult);
+        self.setSP(@intCast(uResult));
+    }
 
     //SUBTRACTION
     fn _sub(self: *Cpu, register: reg, first: u8, second: u8, addCarry: bool) void {

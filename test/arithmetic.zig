@@ -272,9 +272,116 @@ test "ADD A, L - test reg z" {
     try expect(exe.cpu.getZ() == 1);
 }
 
-fn subA(inst: u8, sub: u8) !void {
-    init(inst);
+fn subA(sub: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
     exe.execute();
-    try expect(exe.cpu.getRegister(reg.A) == (150 - sub));
+    const result: u8 = 150 -% sub;
+    try expect(exe.cpu.getRegister(reg.A) == result);
+}
+
+fn subA_r8(inst: u8, register: reg, sub: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, sub);
+    try subA(sub);
+}
+
+test "SUB A, B" {
+    try subA_r8(0x90, reg.B, 50);
+}
+
+test "SUB A, C" {
+    try subA_r8(0x91, reg.C, 50);
+}
+
+test "SUB A, D" {
+    try subA_r8(0x92, reg.D, 50);
+}
+
+test "SUB A, E" {
+    try subA_r8(0x93, reg.E, 50);
+}
+
+test "SUB A, H" {
+    try subA_r8(0x94, reg.H, 50);
+}
+
+test "SUB A, L" {
+    try subA_r8(0x95, reg.L, 50);
+}
+
+test "SUB A, [HL]" {
+    init(0x96);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 30);
+    try subA(30);
+}
+
+test "SUB A, A" {
+    init(0x97);
+    try subA(150);
+    try expect(exe.cpu.getZ() == 1);
+    try expect(exe.cpu.getN() == 1);
+    try expect(exe.cpu.getH() == 0);
+    try expect(exe.cpu.getC() == 0);
+}
+
+fn sbcA_r8(inst: u8, register: reg, sub: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, sub);
+    try sbcA(sub);
+}
+
+fn sbcA(sub: u8) !void {
+    exe.cpu.setRegister(reg.A, 150);
+    exe.cpu.setC(1);
+    exe.execute();
+    const result: u8 = 150 -% sub -% 1;
+    //std.debug.print("reslt {} reg {}\n", .{ result, exe.cpu.getRegister(reg.A) });
+    try expect(exe.cpu.getRegister(reg.A) == result);
+}
+
+test "SBC A, B" {
+    try sbcA_r8(0x98, reg.B, 50);
+}
+
+test "SBC A, C" {
+    try sbcA_r8(0x99, reg.C, 50);
+}
+
+test "SBC A, D" {
+    try sbcA_r8(0x9A, reg.D, 50);
+}
+
+test "SBC A, E" {
+    try sbcA_r8(0x9B, reg.E, 50);
+}
+
+test "SBC A, H" {
+    try sbcA_r8(0x9C, reg.H, 50);
+}
+
+test "SBC A, L" {
+    try sbcA_r8(0x9D, reg.L, 50);
+}
+
+test "SBC A, [HL]" {
+    init(0x9E);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 30);
+    try subA(30);
+}
+
+test "SBC A, A" {
+    init(0x9F);
+    try sbcA(150);
+    try expect(exe.cpu.getZ() == 0);
+    try expect(exe.cpu.getN() == 1);
+    try expect(exe.cpu.getH() == 0);
+    try expect(exe.cpu.getC() == 1);
+}
+
+test "SUB A, L - test registers" {
+    try subA_r8(0x95, reg.L, 15);
+    try expect(exe.cpu.getN() == 1);
+    try expect(exe.cpu.getH() == 1);
 }

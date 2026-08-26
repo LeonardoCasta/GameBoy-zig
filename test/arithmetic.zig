@@ -8,6 +8,20 @@ fn init(instruction: u8) void {
     exe.ram.write(0, instruction);
 }
 
+//================== sp add i8 ==================
+test "LD SP + n8" {
+    init(0xF8);
+    exe.cpu.setSP(33);
+    exe.ram.write(1, 17);
+    exe.ram.write(2, 0xF8);
+    exe.ram.write(3, 0xFF);
+    exe.execute();
+    try expect(exe.cpu.getHL() == 50);
+    exe.cpu.setSP(50);
+    exe.execute();
+    try expect(exe.cpu.getHL() == 49);
+}
+
 //================== 16 bit arithmetic ==================
 test "INC BC" {
     init(0x03);
@@ -158,6 +172,7 @@ test "OR A, n8" {
 }
 
 //=========================== arithmetic ======================
+//=========================== add ======================
 fn addA(addend: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
     exe.execute();
@@ -272,6 +287,7 @@ test "ADD A, L - test reg z" {
     try expect(exe.cpu.getZ() == 1);
 }
 
+//=========================== sub ======================
 fn subA(sub: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
     exe.execute();
@@ -384,4 +400,112 @@ test "SUB A, L - test registers" {
     try subA_r8(0x95, reg.L, 15);
     try expect(exe.cpu.getN() == 1);
     try expect(exe.cpu.getH() == 1);
+}
+
+//=========================== sub ======================
+fn andA(op: u8) !void {
+    exe.cpu.setRegister(reg.A, 0xF2);
+    exe.execute();
+    const result: u8 = 0xF2 & op;
+    try expect(exe.cpu.getRegister(reg.A) == result);
+}
+
+fn andA_r8(inst: u8, register: reg, op: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, op);
+    try andA(op);
+}
+
+test "AND A, B" {
+    try andA_r8(0xA0, reg.B, 0xF0);
+}
+
+test "AND A, C" {
+    try andA_r8(0xA1, reg.C, 0xF0);
+}
+
+test "AND A, D" {
+    try andA_r8(0xA2, reg.D, 0xF0);
+}
+
+test "AND A, E" {
+    try andA_r8(0xA3, reg.E, 0xF0);
+}
+
+test "AND A, H" {
+    try andA_r8(0xA4, reg.H, 0xF0);
+}
+
+test "AND A, L" {
+    try andA_r8(0xA5, reg.L, 0xF0);
+}
+
+test "AND A, [HL]" {
+    init(0xA6);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 0xF0);
+    try andA(0xF0);
+}
+
+test "AND A, A" {
+    init(0xA7);
+    try andA(0xF2);
+    //try expect(exe.cpu.getZ() == 1);
+    try expect(exe.cpu.getN() == 0);
+    try expect(exe.cpu.getH() == 1);
+    try expect(exe.cpu.getC() == 0);
+}
+
+//=========================== or ======================
+fn andA(op: u8) !void {
+    exe.cpu.setRegister(reg.A, 0xF2);
+    exe.execute();
+    const result: u8 = 0xF2 & op;
+    try expect(exe.cpu.getRegister(reg.A) == result);
+}
+
+fn andA_r8(inst: u8, register: reg, op: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, op);
+    try andA(op);
+}
+
+test "AND A, B" {
+    try andA_r8(0xA0, reg.B, 0xF0);
+}
+
+test "AND A, C" {
+    try andA_r8(0xA1, reg.C, 0xF0);
+}
+
+test "AND A, D" {
+    try andA_r8(0xA2, reg.D, 0xF0);
+}
+
+test "AND A, E" {
+    try andA_r8(0xA3, reg.E, 0xF0);
+}
+
+test "AND A, H" {
+    try andA_r8(0xA4, reg.H, 0xF0);
+}
+
+test "AND A, L" {
+    try andA_r8(0xA5, reg.L, 0xF0);
+}
+
+test "AND A, [HL]" {
+    init(0xA6);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 0xF0);
+    try andA(0xF0);
+}
+
+test "AND A, A" {
+    init(0xA7);
+    try andA(0xF2);
+    //try expect(exe.cpu.getZ() == 1);
+    try expect(exe.cpu.getN() == 0);
+    try expect(exe.cpu.getH() == 1);
+    try expect(exe.cpu.getC() == 0);
 }

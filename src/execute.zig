@@ -1048,7 +1048,7 @@ pub fn execute() void {
             //load hl sp + e8
             const uVal: u8 = ram.read(cpu.PC + 1);
             const val: i8 = @bitCast(uVal);
-            cpu.add_SP_e8(val);
+            cpu.hl_SP_e8(val);
         },
         0xF9 => {
             cpu.setSP(cpu.getHL());

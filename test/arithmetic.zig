@@ -457,55 +457,166 @@ test "AND A, A" {
 }
 
 //=========================== or ======================
-fn andA(op: u8) !void {
+fn orA(op: u8) !void {
     exe.cpu.setRegister(reg.A, 0xF2);
     exe.execute();
-    const result: u8 = 0xF2 & op;
+    const result: u8 = 0xF2 | op;
     try expect(exe.cpu.getRegister(reg.A) == result);
 }
 
-fn andA_r8(inst: u8, register: reg, op: u8) !void {
+fn orA_r8(inst: u8, register: reg, op: u8) !void {
     init(inst);
     exe.cpu.setRegister(register, op);
-    try andA(op);
+    try orA(op);
 }
 
-test "AND A, B" {
-    try andA_r8(0xA0, reg.B, 0xF0);
+test "OR A, B" {
+    try orA_r8(0xB0, reg.B, 0xF0);
 }
 
-test "AND A, C" {
-    try andA_r8(0xA1, reg.C, 0xF0);
+test "OR A, C" {
+    try orA_r8(0xB1, reg.C, 0xF0);
 }
 
-test "AND A, D" {
-    try andA_r8(0xA2, reg.D, 0xF0);
+test "OR A, D" {
+    try orA_r8(0xB2, reg.D, 0xF0);
 }
 
-test "AND A, E" {
-    try andA_r8(0xA3, reg.E, 0xF0);
+test "OR A, E" {
+    try orA_r8(0xB3, reg.E, 0xF0);
 }
 
-test "AND A, H" {
-    try andA_r8(0xA4, reg.H, 0xF0);
+test "OR A, H" {
+    try orA_r8(0xB4, reg.H, 0xF0);
 }
 
-test "AND A, L" {
-    try andA_r8(0xA5, reg.L, 0xF0);
+test "OR A, L" {
+    try orA_r8(0xB5, reg.L, 0xF0);
 }
 
-test "AND A, [HL]" {
-    init(0xA6);
+test "OR A, [HL]" {
+    init(0xB6);
     exe.cpu.setHL(0x55);
     exe.ram.write(0x55, 0xF0);
-    try andA(0xF0);
+    try orA(0xF0);
 }
 
-test "AND A, A" {
-    init(0xA7);
-    try andA(0xF2);
+test "OR A, A" {
+    init(0xB7);
+    try orA(0xF2);
     //try expect(exe.cpu.getZ() == 1);
     try expect(exe.cpu.getN() == 0);
+    try expect(exe.cpu.getH() == 0);
+    try expect(exe.cpu.getC() == 0);
+}
+
+//=========================== xor ======================
+fn xorA(op: u8) !void {
+    exe.cpu.setRegister(reg.A, 0xF2);
+    exe.execute();
+    const result: u8 = 0xF2 ^ op;
+    try expect(exe.cpu.getRegister(reg.A) == result);
+}
+
+fn xorA_r8(inst: u8, register: reg, op: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, op);
+    try xorA(op);
+}
+
+test "XOR A, B" {
+    try xorA_r8(0xA8, reg.B, 0xF0);
+}
+
+test "XOR A, C" {
+    try xorA_r8(0xA9, reg.C, 0xF0);
+}
+
+test "XOR A, D" {
+    try xorA_r8(0xAA, reg.D, 0xF0);
+}
+
+test "XOR A, E" {
+    try xorA_r8(0xAB, reg.E, 0xF0);
+}
+
+test "XOR A, H" {
+    try xorA_r8(0xAC, reg.H, 0xF0);
+}
+
+test "XOR A, L" {
+    try xorA_r8(0xAD, reg.L, 0xF0);
+}
+
+test "XOR A, [HL]" {
+    init(0xAE);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 0xF0);
+    try xorA(0xF0);
+}
+
+test "XOR A, A" {
+    init(0xAF);
+    try xorA(0xF2);
+    try expect(exe.cpu.getN() == 0);
+    try expect(exe.cpu.getH() == 0);
+    try expect(exe.cpu.getC() == 0);
+}
+
+//=========================== cp ======================
+fn cpA() !void {
+    exe.cpu.setRegister(reg.A, 0xF2);
+    exe.execute();
+    try expect(exe.cpu.getRegister(reg.A) == 0xF2);
+    try expect(exe.cpu.getZ() == 0);
+    try expect(exe.cpu.getN() == 1);
     try expect(exe.cpu.getH() == 1);
+    try expect(exe.cpu.getC() == 1);
+}
+
+fn cpA_r8(inst: u8, register: reg, op: u8) !void {
+    init(inst);
+    exe.cpu.setRegister(register, op);
+    try cpA();
+}
+
+test "CP A, B" {
+    try cpA_r8(0xB8, reg.B, 0xF3);
+}
+
+test "CP A, C" {
+    try cpA_r8(0xB9, reg.C, 0xF3);
+}
+
+test "CP A, D" {
+    try cpA_r8(0xBA, reg.D, 0xF4);
+}
+
+test "CP A, E" {
+    try cpA_r8(0xBB, reg.E, 0xF3);
+}
+
+test "CP A, H" {
+    try cpA_r8(0xBC, reg.H, 0xF3);
+}
+
+test "CP A, L" {
+    try cpA_r8(0xBD, reg.L, 0xF3);
+}
+
+test "CP A, [HL]" {
+    init(0xBE);
+    exe.cpu.setHL(0x55);
+    exe.ram.write(0x55, 0xF3);
+    try cpA();
+}
+
+test "CP A, A" {
+    init(0xBF);
+    exe.cpu.setRegister(reg.A, 0xF0);
+    exe.execute();
+    try expect(exe.cpu.getZ() == 1);
+    try expect(exe.cpu.getN() == 1);
+    try expect(exe.cpu.getH() == 0);
     try expect(exe.cpu.getC() == 0);
 }

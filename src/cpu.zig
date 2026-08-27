@@ -453,7 +453,7 @@ pub const Cpu = struct {
 
     pub fn xorHL(self: *Cpu, dest: reg, second: u16) void {
         const byte: u8 = @truncate(second);
-        self._and(dest, self.reg[@intFromEnum(dest)], byte);
+        self._xor(dest, self.reg[@intFromEnum(dest)], byte);
     }
 
     pub fn xorA_HL(self: *Cpu, second: u16) void {
@@ -462,13 +462,13 @@ pub const Cpu = struct {
 
     //CP
     fn _cp(self: *Cpu, first: u8, second: u8) void {
-        const result: i16 = first - second;
+        const result: i16 = @as(i16, first) - @as(i16, second);
 
         //Z register set to zero if result is zero
         if (result == 0) {
-            self.setZ(0);
-        } else {
             self.setZ(1);
+        } else {
+            self.setZ(0);
         }
         //N set to zero
         self.setN(1);

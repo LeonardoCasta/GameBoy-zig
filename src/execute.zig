@@ -4,6 +4,7 @@ const reg = @import("cpu.zig").reg;
 const reg16 = @import("cpu.zig").reg16;
 const memoryModule = @import("memory.zig");
 const instructionModule = @import("instructions.zig");
+const Btns = @import("btns.zig").Btns;
 
 pub var cpu: cpuModule.Cpu = undefined;
 pub var ram: memoryModule.Ram = undefined;
@@ -16,9 +17,9 @@ pub fn testInit() void {
     instructionModule.init();
 }
 
-pub fn init(io: std.Io) void {
+pub fn init(io: std.Io, btns: *Btns) void {
     cpu = cpuModule.Cpu.init();
-    ram = memoryModule.Ram.init();
+    ram = memoryModule.Ram.init(btns);
 
     //when testing i dont want to load the file
     _ = std.Io.Dir.readFile(std.Io.Dir.cwd(), io, "./Games/Pokemon", &ram.game.game) catch {

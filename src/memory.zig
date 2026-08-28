@@ -1,6 +1,7 @@
 const std = @import("std");
 const constants = @import("registersConstants.zig");
 const builtint = @import("builtin");
+const Btns = @import("btns.zig").Btns;
 
 pub const Game = struct {
     game: [1_000_000]u8,
@@ -33,13 +34,14 @@ pub const Ram = struct {
     wram: Wram,
     vram: Vram,
     highRam: [0x7E]u8,
+    btns: *Btns,
     interruptReg: u1,
 
-    pub fn init() Ram {
-        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .interruptReg = 0 };
+    pub fn init(btnsRef: *Btns) Ram {
+        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .interruptReg = 0 };
     }
 
-    pub fn read(self: *const Ram, address: u16) u8 {
+    pub fn read(self: *Ram, address: u16) u8 {
         //here based on the value of index i need to change where to read
         if (builtint.is_test) {
             return self.game.game[@intCast(address)];
@@ -90,7 +92,6 @@ pub const Ram = struct {
                     //interrupt registers
                     result = self.interruptReg;
                 },
-                else => std.debug.print("memory not addressable\n", .{}),
             }
             return result;
         }

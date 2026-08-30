@@ -2,9 +2,9 @@ const std = @import("std");
 pub const cpuModule = @import("cpu.zig");
 const reg = @import("cpu.zig").reg;
 const reg16 = @import("cpu.zig").reg16;
-const memoryModule = @import("memory.zig");
+pub const memoryModule = @import("memory.zig");
 const instructionModule = @import("instructions.zig");
-const Btns = @import("btns.zig").Btns;
+pub const Btns = @import("btns.zig").Btns;
 
 pub var cpu: cpuModule.Cpu = undefined;
 pub var ram: memoryModule.Ram = undefined;
@@ -12,8 +12,9 @@ pub var ei: u8 = 0;
 pub var isJp: bool = false;
 
 pub fn testInit() void {
+    var btn = Btns.init();
     cpu = cpuModule.Cpu.init();
-    ram = memoryModule.Ram.init();
+    ram = memoryModule.Ram.init(&btn);
     instructionModule.init();
 }
 

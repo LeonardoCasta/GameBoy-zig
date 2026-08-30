@@ -9,3 +9,7 @@ comptime {
 comptime {
     _ = @import("jump.zig");
 }
+
+comptime {
+    _ = @import("io.zig");
+}

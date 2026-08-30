@@ -47,6 +47,10 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/cpu.zig"),
     }));
 
+    tests.root_module.addImport("memory", b.createModule(.{
+        .root_source_file = b.path("src/memory.zig"),
+    }));
+
     const run_tests = b.addRunArtifact(tests);
 
     const test_step = b.step("test", "Run tests");

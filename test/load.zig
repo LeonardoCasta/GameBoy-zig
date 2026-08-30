@@ -81,16 +81,16 @@ test "LD SP, HL" {
 test "LDH [a8], A" {
     init(0xE0);
     exe.cpu.setRegister(reg.A, 0x11);
-    exe.ram.write(1, 0x45);
-    try expect(exe.ram.read(0xFF45) == 0);
+    exe.ram.write(1, 0x88);
+    try expect(exe.ram.read(0xFF88) == 0);
     exe.execute();
-    try expect(exe.ram.read(0xFF45) == 0x11);
+    try expect(exe.ram.read(0xFF88) == 0x11);
 }
 
 test "LDH A, [a8]" {
     init(0xF0);
-    exe.ram.write(1, 0x45); //set low byte of address
-    exe.ram.write(0xFF45, 0x67); //set full address
+    exe.ram.write(1, 0x88); //set low byte of address
+    exe.ram.write(0xFF88, 0x67); //set full address
     try expect(exe.cpu.getRegister(reg.A) == 0);
     exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0x67);
@@ -99,16 +99,16 @@ test "LDH A, [a8]" {
 test "LDH [C], A" {
     init(0xE2);
     exe.cpu.setRegister(reg.A, 0x89);
-    exe.cpu.setRegister(reg.C, 0x34);
-    try expect(exe.ram.read(0xFF34) == 0);
+    exe.cpu.setRegister(reg.C, 0x88);
+    try expect(exe.ram.read(0xFF88) == 0);
     exe.execute();
-    try expect(exe.ram.read(0xFF34) == 0x89);
+    try expect(exe.ram.read(0xFF88) == 0x89);
 }
 
 test "LDH A, [C]" {
     init(0xF2);
-    exe.cpu.setRegister(reg.C, 0x34);
-    exe.ram.write(0xFF34, 0x78);
+    exe.cpu.setRegister(reg.C, 0x88);
+    exe.ram.write(0xFF88, 0x78);
     try expect(exe.cpu.getRegister(reg.A) == 0);
     exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0x78);

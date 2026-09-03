@@ -197,6 +197,18 @@ pub const Ram = struct {
                     return self.wram.bank;
                 }
             },
+            0xFF04 => {
+                //div divider register
+            },
+            0xFF05 => {
+                //tima timer counter
+            },
+            0xFF06 => {
+                //tma timer modulo
+            },
+            0xFF07 => {
+                //tac time control
+            },
             else => {
                 //FF01 serial transfer not implemented for now
                 //FF56 ir post non implemented
@@ -204,7 +216,7 @@ pub const Ram = struct {
                 if (isWrite) {
                     return 0;
                 } else {
-                    return self.btns.readBtns();
+                    return 0;
                 }
             },
         }

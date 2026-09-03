@@ -31,14 +31,15 @@ pub fn init(io: std.Io, btns: *Btns) void {
     instructionModule.init();
 }
 
-pub fn execute() void {
+pub fn execute() u8 {
     var opcode: u8 = ram.read(cpu.PC);
-    var jump: i32 = 0;
-    const info = instructionModule.base[opcode];
+    var jump: i32 = 0; //how much i need to jump
+    var taken: bool = false; //used in case of instruction with condition on execution
 
     if (opcode == 0xCB) {
         opcode = ram.read(cpu.PC + 1);
     }
+    const info = instructionModule.base[opcode];
     switch (opcode) {
         0x00 => {},
         0x01 => {
@@ -161,6 +162,7 @@ pub fn execute() void {
             if (z == 0) {
                 const uJump = ram.read(cpu.PC + 1);
                 jump = @as(i32, @intCast(uJump));
+                taken = true;
             }
         },
         0x21 => {
@@ -195,6 +197,7 @@ pub fn execute() void {
             if (z == 1) {
                 const uJump = ram.read(cpu.PC + 1);
                 jump = @as(i32, @intCast(uJump));
+                taken = true;
             }
         },
         0x29 => {
@@ -228,6 +231,7 @@ pub fn execute() void {
             if (c == 0) {
                 const uJump = ram.read(cpu.PC + 1);
                 jump = @as(i32, @intCast(uJump));
+                taken = true;
             }
         },
         0x31 => {
@@ -267,6 +271,7 @@ pub fn execute() void {
             if (c == 1) {
                 const uJump = ram.read(cpu.PC + 1);
                 jump = @as(i32, @intCast(uJump));
+                taken = true;
             }
         },
         0x39 => {
@@ -725,6 +730,7 @@ pub fn execute() void {
                 const result: u16 = first << 8 | second;
                 cpu.PC = result;
                 isJp = true;
+                taken = true;
             }
         },
         0xC1 => {
@@ -739,6 +745,7 @@ pub fn execute() void {
                 const newAddress = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xC3 => {
@@ -760,6 +767,7 @@ pub fn execute() void {
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xC5 => {
@@ -785,6 +793,7 @@ pub fn execute() void {
                 const result: u16 = first << 8 | second;
                 cpu.PC = result;
                 isJp = true;
+                taken = true;
             }
         },
         0xC9 => {
@@ -801,6 +810,7 @@ pub fn execute() void {
                 const newAddress = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xCB => {},
@@ -818,6 +828,7 @@ pub fn execute() void {
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xCD => {
@@ -850,6 +861,7 @@ pub fn execute() void {
                 const result: u16 = first << 8 | second;
                 cpu.PC = result;
                 isJp = true;
+                taken = true;
             }
         },
         0xD1 => {
@@ -864,6 +876,7 @@ pub fn execute() void {
                 const newAddress = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xD3 => {},
@@ -881,6 +894,7 @@ pub fn execute() void {
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xD5 => {
@@ -906,6 +920,7 @@ pub fn execute() void {
                 const result: u16 = first << 8 | second;
                 cpu.PC = result;
                 isJp = true;
+                taken = true;
             }
         },
         0xD9 => {
@@ -925,6 +940,7 @@ pub fn execute() void {
                 const newAddress = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xDB => {},
@@ -942,6 +958,7 @@ pub fn execute() void {
                 const newAddress: u16 = ram.read16(cpu.PC + 1);
                 cpu.PC = newAddress;
                 isJp = true;
+                taken = true;
             }
         },
         0xDD => {},
@@ -1085,6 +1102,12 @@ pub fn execute() void {
     } else {
         const newAddress = @as(i32, @intCast(cpu.PC)) + jump + info.length;
         cpu.PC = @truncate(@as(u32, @bitCast(newAddress)));
+    }
+
+    if (taken) {
+        return info.cycles_taken;
+    } else {
+        return info.cycles;
     }
 }
 

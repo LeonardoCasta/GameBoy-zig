@@ -4,7 +4,11 @@ const ray = @cImport({
 });
 const exec = @import("execute.zig");
 const Btns = @import("btns.zig").Btns;
+const Timers = @import("timer.zig").Timers;
 const cpuClock = 4194304;
+const cpuDoubleClock = 8328608;
+const cpuClockTimeElapsed = 1 / cpuClock;
+const cpuDoubleClockTimeElapsed = 1 / cpuDoubleClock;
 
 pub fn main(init: std.process.Init) void {
     // see how to handle raylib, maybe in his own file or something
@@ -14,22 +18,24 @@ pub fn main(init: std.process.Init) void {
     var timer: f128 = 0;
 
     var btns: Btns = Btns.init();
+    var timers: Timers = Timers.init();
     const io = init.io;
-    exec.init(io, &btns);
+    exec.init(io, &btns, &timer);
 
     //boot sequence
     //try boot.boot();
     while (!ray.WindowShouldClose()) {
         timer += ray.GetFrameTime();
-        if (timer >= 1 / cpuClock) {
+        if (timer >= cpuClockTimeElapsed) {
             //update buttons
             btns.update();
             //execute instruction
-            const cpuCycles = exec.execute() * 4;
-
-            timer -= timeElapsed;
+            const tCycles = exec.execute() * 4;
 
             //advance all other components cpuCycles
+            timers.update(tCycles);
+
+            timer -= tCycles * cpuClockTimeElapsed;
             return;
 
             //raylib related things

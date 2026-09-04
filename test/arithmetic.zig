@@ -15,10 +15,10 @@ test "LD SP + n8" {
     exe.ram.write(1, 17);
     exe.ram.write(2, 0xF8);
     exe.ram.write(3, 0xFF);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 50);
     exe.cpu.setSP(50);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 49);
 }
 
@@ -26,28 +26,28 @@ test "LD SP + n8" {
 test "INC BC" {
     init(0x03);
     try expect(exe.cpu.getBC() == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getBC() == 1);
 }
 
 test "INC DE" {
     init(0x13);
     try expect(exe.cpu.getDE() == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getDE() == 1);
 }
 
 test "INC HL" {
     init(0x23);
     try expect(exe.cpu.getHL() == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 1);
 }
 
 test "INC SP" {
     init(0x33);
     try expect(exe.cpu.getSP() == 0xFFFE);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getSP() == 0xFFFF);
 }
 
@@ -55,7 +55,7 @@ test "DEC BC" {
     init(0x0B);
     exe.cpu.setBC(2);
     try expect(exe.cpu.getBC() == 2);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getBC() == 1);
 }
 
@@ -63,7 +63,7 @@ test "DEC DE" {
     init(0x1B);
     exe.cpu.setDE(2);
     try expect(exe.cpu.getDE() == 2);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getDE() == 1);
 }
 
@@ -71,7 +71,7 @@ test "DEC HL" {
     init(0x2B);
     exe.cpu.setHL(2);
     try expect(exe.cpu.getHL() == 2);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 1);
 }
 
@@ -79,7 +79,7 @@ test "DEC SP" {
     init(0x3B);
     exe.cpu.setSP(2);
     try expect(exe.cpu.getSP() == 2);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getSP() == 1);
 }
 
@@ -87,7 +87,7 @@ test "ADD HL BC" {
     init(0x09);
     exe.cpu.setBC(47);
     try expect(exe.cpu.getHL() == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 47);
     try expect(exe.cpu.getH() == 0);
     try expect(exe.cpu.getC() == 0);
@@ -97,7 +97,7 @@ test "ADD HL DE" {
     init(0x19);
     exe.cpu.setDE(47);
     try expect(exe.cpu.getHL() == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 47);
 }
 
@@ -106,7 +106,7 @@ test "ADD HL HL" {
     try expect(exe.cpu.getHL() == 0);
     exe.cpu.setHL(47);
     try expect(exe.cpu.getHL() == 47);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 94);
 }
 
@@ -114,14 +114,14 @@ test "ADD HL SP" {
     init(0x39);
     exe.cpu.setSP(47);
     try expect(exe.cpu.getHL() == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getHL() == 47);
 }
 
 test "ADD HL, r16 flags H should set to 1" {
     init(0x09);
     exe.cpu.setBC(0x1FFF);
-    exe.execute();
+    _ = exe.execute();
     //test 11 bit carry flag
     try expect(exe.cpu.getH() == 1);
 }
@@ -130,7 +130,7 @@ test "ADD HL, r16 flags H and C should set to 1" {
     init(0x09);
     exe.cpu.setBC(0xFFFF);
     exe.cpu.setHL(0x1);
-    exe.execute();
+    _ = exe.execute();
     //test 11 bit carry flag
     try expect(exe.cpu.getH() == 1);
     try expect(exe.cpu.getC() == 1);
@@ -143,7 +143,7 @@ test "ADD A, n8" {
     init(0xC6);
     exe.cpu.setRegister(reg.A, 11);
     exe.ram.write(1, 30);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 41);
 }
 
@@ -151,7 +151,7 @@ test "SUB A, n8" {
     init(0xD6);
     exe.cpu.setRegister(reg.A, 11);
     exe.ram.write(1, 1);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 10);
 }
 
@@ -159,7 +159,7 @@ test "AND A, n8" {
     init(0xE6);
     exe.cpu.setRegister(reg.A, 0xF0);
     exe.ram.write(1, 0x0F);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0);
 }
 
@@ -167,7 +167,7 @@ test "OR A, n8" {
     init(0xF6);
     exe.cpu.setRegister(reg.A, 0xF0);
     exe.ram.write(1, 0x0F);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0xFF);
 }
 
@@ -175,7 +175,7 @@ test "OR A, n8" {
 //=========================== add ======================
 fn addA(addend: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
-    exe.execute();
+    _ = exe.execute();
     const result: u8 = 150 +% addend;
     try expect(exe.cpu.getRegister(reg.A) == result);
 }
@@ -183,7 +183,7 @@ fn addA(addend: u8) !void {
 fn adcA(addend: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
     exe.cpu.setC(1);
-    exe.execute();
+    _ = exe.execute();
     const result: u8 = 150 +% addend +% 1;
     //std.debug.print("reslt {} reg {}\n", .{ result, exe.cpu.getRegister(reg.A) });
     try expect(exe.cpu.getRegister(reg.A) == result);
@@ -290,7 +290,7 @@ test "ADD A, L - test reg z" {
 //=========================== sub ======================
 fn subA(sub: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
-    exe.execute();
+    _ = exe.execute();
     const result: u8 = 150 -% sub;
     try expect(exe.cpu.getRegister(reg.A) == result);
 }
@@ -350,7 +350,7 @@ fn sbcA_r8(inst: u8, register: reg, sub: u8) !void {
 fn sbcA(sub: u8) !void {
     exe.cpu.setRegister(reg.A, 150);
     exe.cpu.setC(1);
-    exe.execute();
+    _ = exe.execute();
     const result: u8 = 150 -% sub -% 1;
     //std.debug.print("reslt {} reg {}\n", .{ result, exe.cpu.getRegister(reg.A) });
     try expect(exe.cpu.getRegister(reg.A) == result);
@@ -405,7 +405,7 @@ test "SUB A, L - test registers" {
 //=========================== sub ======================
 fn andA(op: u8) !void {
     exe.cpu.setRegister(reg.A, 0xF2);
-    exe.execute();
+    _ = exe.execute();
     const result: u8 = 0xF2 & op;
     try expect(exe.cpu.getRegister(reg.A) == result);
 }
@@ -459,7 +459,7 @@ test "AND A, A" {
 //=========================== or ======================
 fn orA(op: u8) !void {
     exe.cpu.setRegister(reg.A, 0xF2);
-    exe.execute();
+    _ = exe.execute();
     const result: u8 = 0xF2 | op;
     try expect(exe.cpu.getRegister(reg.A) == result);
 }
@@ -513,7 +513,7 @@ test "OR A, A" {
 //=========================== xor ======================
 fn xorA(op: u8) !void {
     exe.cpu.setRegister(reg.A, 0xF2);
-    exe.execute();
+    _ = exe.execute();
     const result: u8 = 0xF2 ^ op;
     try expect(exe.cpu.getRegister(reg.A) == result);
 }
@@ -566,7 +566,7 @@ test "XOR A, A" {
 //=========================== cp ======================
 fn cpA() !void {
     exe.cpu.setRegister(reg.A, 0xF2);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0xF2);
     try expect(exe.cpu.getZ() == 0);
     try expect(exe.cpu.getN() == 1);
@@ -614,7 +614,7 @@ test "CP A, [HL]" {
 test "CP A, A" {
     init(0xBF);
     exe.cpu.setRegister(reg.A, 0xF0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getZ() == 1);
     try expect(exe.cpu.getN() == 1);
     try expect(exe.cpu.getH() == 0);

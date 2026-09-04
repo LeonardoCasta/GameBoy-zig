@@ -2,6 +2,7 @@ const std = @import("std");
 const constants = @import("registersConstants.zig");
 const builtint = @import("builtin");
 const Btns = @import("btns.zig").Btns;
+const Timers = @import("timer.zig").Timers;
 
 pub const Game = struct {
     game: [1_000_000]u8,
@@ -40,10 +41,11 @@ pub const Ram = struct {
     vram: Vram,
     highRam: [0x7E]u8,
     btns: *Btns,
+    timers: *Timers,
     interruptReg: u8,
 
-    pub fn init(btnsRef: *Btns) Ram {
-        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .interruptReg = 0 };
+    pub fn init(btnsRef: *Btns, timersRef: *Timers) Ram {
+        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .timers = timersRef, .interruptReg = 0 };
     }
 
     fn unmappedRead() u8 {
@@ -198,16 +200,35 @@ pub const Ram = struct {
                 }
             },
             0xFF04 => {
-                //div divider register
+                //div
+                if (isWrite) {
+                    self.timers.resetDiv();
+                    return 0;
+                } else {
+                    return self.timers.getDiv();
+                }
             },
             0xFF05 => {
                 //tima timer counter
+                if (isWrite) {
+                    return 0;
+                } else {
+                    return self.timers.getTima();
+                }
             },
             0xFF06 => {
                 //tma timer modulo
+                if (isWrite) {
+                    self.timers.setTma(value);
+                    return 0;
+                } else {}
             },
             0xFF07 => {
                 //tac time control
+                if (isWrite) {
+                    self.timers.setTac(value);
+                    return 0;
+                } else {}
             },
             else => {
                 //FF01 serial transfer not implemented for now
@@ -220,5 +241,6 @@ pub const Ram = struct {
                 }
             },
         }
+        return 0;
     }
 };

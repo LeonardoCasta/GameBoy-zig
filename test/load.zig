@@ -31,7 +31,7 @@ fn checkHL(expectedValue: u8) !void {
 fn runTest(to: reg, from: reg) !void {
     const value: u8 = 15;
     setReg(from, value);
-    exe.execute();
+    _ = exe.execute();
     try checkReg(to, value);
 }
 
@@ -40,7 +40,7 @@ fn runTestR8Hl(register: reg) !void {
     setReg(reg.H, 0x05);
     setReg(reg.L, 0x02);
     exe.ram.write(0x0502, 0x23);
-    exe.execute();
+    _ = exe.execute();
     try checkReg(register, 0x23);
 }
 
@@ -49,7 +49,7 @@ fn runTestHLR8(register: reg) !void {
     setReg(reg.H, 0x03);
     setReg(reg.L, 0x04);
     setReg(register, 0x11);
-    exe.execute();
+    _ = exe.execute();
     try checkHL(0x11);
 }
 
@@ -57,7 +57,7 @@ fn test_r16_n16(instruction: u8) void {
     init(instruction);
     exe.ram.write(1, 0x11);
     exe.ram.write(2, 0x22);
-    exe.execute();
+    _ = exe.execute();
 }
 
 // =================== STRANGE LD INSTRUCTIONS =========================
@@ -66,7 +66,7 @@ test "LD [a16], SP" {
     exe.ram.write(1, 0x10);
     exe.ram.write(2, 0x10);
     exe.cpu.setSP(0x405);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.ram.read(0x1010) == 0x5);
     try expect(exe.ram.read(0x1011) == 0x4);
 }
@@ -74,7 +74,7 @@ test "LD [a16], SP" {
 test "LD SP, HL" {
     init(0xF9);
     exe.cpu.setHL(0x78);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getSP() == 0x78);
 }
 
@@ -83,7 +83,7 @@ test "LDH [a8], A" {
     exe.cpu.setRegister(reg.A, 0x11);
     exe.ram.write(1, 0x88);
     try expect(exe.ram.read(0xFF88) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.ram.read(0xFF88) == 0x11);
 }
 
@@ -92,7 +92,7 @@ test "LDH A, [a8]" {
     exe.ram.write(1, 0x88); //set low byte of address
     exe.ram.write(0xFF88, 0x67); //set full address
     try expect(exe.cpu.getRegister(reg.A) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0x67);
 }
 
@@ -101,7 +101,7 @@ test "LDH [C], A" {
     exe.cpu.setRegister(reg.A, 0x89);
     exe.cpu.setRegister(reg.C, 0x88);
     try expect(exe.ram.read(0xFF88) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.ram.read(0xFF88) == 0x89);
 }
 
@@ -110,7 +110,7 @@ test "LDH A, [C]" {
     exe.cpu.setRegister(reg.C, 0x88);
     exe.ram.write(0xFF88, 0x78);
     try expect(exe.cpu.getRegister(reg.A) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0x78);
 }
 
@@ -120,7 +120,7 @@ test "LD [r16], A" {
     exe.ram.write(1, 0x33);
     exe.ram.write(2, 0x33);
     try expect(exe.ram.read(0x3333) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.ram.read(0x3333) == 0x99);
 }
 
@@ -130,7 +130,7 @@ test "LD A, [r16]" {
     exe.ram.write(2, 0x33);
     exe.ram.write(0x3333, 0x77);
     try expect(exe.cpu.getRegister(reg.A) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0x77);
 }
 
@@ -153,34 +153,34 @@ fn initPush(instruction: u8) void {
 test "POP BC" {
     initPop(0xC1);
     try expect(exe.cpu.getRegister(reg.B) == 0 and exe.cpu.getRegister(reg.C) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.C) == 4 and exe.cpu.getRegister(reg.B) == 5);
 }
 
 test "POP DE" {
     initPop(0xD1);
     try expect(exe.cpu.getRegister(reg.E) == 0 and exe.cpu.getRegister(reg.D) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.E) == 4 and exe.cpu.getRegister(reg.D) == 5);
 }
 
 test "POP HL" {
     initPop(0xE1);
     try expect(exe.cpu.getRegister(reg.L) == 0 and exe.cpu.getRegister(reg.H) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.L) == 4 and exe.cpu.getRegister(reg.H) == 5);
 }
 
 test "POP AF" {
     initPop(0xF1);
     try expect(exe.cpu.getRegister(reg.F) == 0 and exe.cpu.getRegister(reg.A) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.F) == 4 and exe.cpu.getRegister(reg.A) == 5);
 }
 
 fn testPush() !void {
     try expect(exe.cpu.SP == 0xFFFE);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.ram.read(0xFFFD) == 0x44);
     try expect(exe.ram.read(0xFFFC) == 0x55);
     try expect(exe.cpu.SP == 0xFFFC);
@@ -244,7 +244,7 @@ test "0x02 LD [BC] A" {
     exe.cpu.setBC(0x44);
     var result = exe.ram.read(0x44);
     try expect(result == 0);
-    exe.execute();
+    _ = exe.execute();
     result = exe.ram.read(0x44);
     try expect(result == 0x67);
 }
@@ -254,7 +254,7 @@ test "0x12 LD [DE] A" {
     exe.cpu.setDE(0x44);
     var result = exe.ram.read(0x44);
     try expect(result == 0);
-    exe.execute();
+    _ = exe.execute();
     result = exe.ram.read(0x44);
     try expect(result == 0x67);
 }
@@ -265,7 +265,7 @@ test "0x22 LD [HL+] A" {
     exe.cpu.setHL(0x44);
     var result = exe.ram.read(0x44);
     try expect(result == 0);
-    exe.execute();
+    _ = exe.execute();
     result = exe.ram.read(0x44);
     try expect(result == 0x67);
     try expect(exe.cpu.getHL() == 0x45);
@@ -277,7 +277,7 @@ test "0x32 LD [HL-] A" {
     exe.cpu.setHL(0x44);
     var result = exe.ram.read(0x44);
     try expect(result == 0);
-    exe.execute();
+    _ = exe.execute();
     result = exe.ram.read(0x44);
     try expect(result == 0x67);
     try expect(exe.cpu.getHL() == 0x43);
@@ -288,7 +288,7 @@ fn test_r8_n8(instruction: u8, register: reg) !void {
     init(instruction);
     exe.ram.write(1, 0x88);
     try expect(exe.cpu.getRegister(register) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(register) == 0x88);
 }
 
@@ -326,7 +326,7 @@ test "LD HL, n8" {
     exe.ram.write(1, 0x34);
     exe.cpu.setHL(0x56);
     try expect(exe.ram.read(exe.cpu.getHL()) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.ram.read(exe.cpu.getHL()) == 0x34);
 }
 
@@ -334,7 +334,7 @@ test "LD HL, n8" {
 fn test_A_r16() !void {
     exe.ram.write(0x11, 0x99);
     try expect(exe.cpu.getRegister(reg.A) == 0);
-    exe.execute();
+    _ = exe.execute();
     try expect(exe.cpu.getRegister(reg.A) == 0x99);
 }
 test "LD A, [BC]" {

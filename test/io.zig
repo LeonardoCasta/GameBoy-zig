@@ -4,7 +4,8 @@ const exe = @import("execute");
 
 test "set buttons to true" {
     var button = exe.Btns.init();
-    var ram = exe.memoryModule.Ram.init(&button);
+    var tmrs = exe.Timers.init();
+    var ram = exe.memoryModule.Ram.init(&button, &tmrs);
     ram.write(0xFF00, 0x00);
     try expect(button.selectBtns == true);
     try expect(button.selectDpad == true);
@@ -12,7 +13,8 @@ test "set buttons to true" {
 
 test "set buttons to false" {
     var button = exe.Btns.init();
-    var ram = exe.memoryModule.Ram.init(&button);
+    var tmrs = exe.Timers.init();
+    var ram = exe.memoryModule.Ram.init(&button, &tmrs);
     ram.write(0xFF00, 0xF0);
     try expect(button.selectBtns == false);
     try expect(button.selectDpad == false);
@@ -20,7 +22,8 @@ test "set buttons to false" {
 
 test "set pad to true and btn to false" {
     var button = exe.Btns.init();
-    var ram = exe.memoryModule.Ram.init(&button);
+    var tmrs = exe.Timers.init();
+    var ram = exe.memoryModule.Ram.init(&button, &tmrs);
     ram.write(0xFF00, 0x20);
     try expect(button.selectBtns == false);
     try expect(button.selectDpad == true);
@@ -28,7 +31,8 @@ test "set pad to true and btn to false" {
 
 test "set pad to false and btn to true" {
     var button = exe.Btns.init();
-    var ram = exe.memoryModule.Ram.init(&button);
+    var tmrs = exe.Timers.init();
+    var ram = exe.memoryModule.Ram.init(&button, &tmrs);
     ram.write(0xFF00, 0x10);
     try expect(button.selectBtns == true);
     try expect(button.selectDpad == false);
@@ -36,7 +40,8 @@ test "set pad to false and btn to true" {
 
 test "read buttons" {
     var button = exe.Btns.init();
-    var ram = exe.memoryModule.Ram.init(&button);
+    var tmrs = exe.Timers.init();
+    var ram = exe.memoryModule.Ram.init(&button, &tmrs);
     ram.write(0xFF00, 0x10);
     button.a = true;
     button.start = true;
@@ -45,7 +50,8 @@ test "read buttons" {
 
 test "read pad" {
     var button = exe.Btns.init();
-    var ram = exe.memoryModule.Ram.init(&button);
+    var tmrs = exe.Timers.init();
+    var ram = exe.memoryModule.Ram.init(&button, &tmrs);
     ram.write(0xFF00, 0x20);
     button.up = true;
     button.right = true;
@@ -54,7 +60,8 @@ test "read pad" {
 
 test "read but both true or false returns all 0" {
     var button = exe.Btns.init();
-    var ram = exe.memoryModule.Ram.init(&button);
+    var tmrs = exe.Timers.init();
+    var ram = exe.memoryModule.Ram.init(&button, &tmrs);
     button.a = true;
     button.start = true;
     button.up = true;

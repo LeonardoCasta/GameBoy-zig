@@ -5,6 +5,7 @@ const reg16 = @import("cpu.zig").reg16;
 pub const memoryModule = @import("memory.zig");
 const instructionModule = @import("instructions.zig");
 pub const Btns = @import("btns.zig").Btns;
+pub const Timers = @import("timer.zig").Timers;
 
 pub var cpu: cpuModule.Cpu = undefined;
 pub var ram: memoryModule.Ram = undefined;
@@ -13,8 +14,9 @@ pub var isJp: bool = false;
 
 pub fn testInit() void {
     var btn = Btns.init();
+    var tmrs = Timers.init();
     cpu = cpuModule.Cpu.init();
-    ram = memoryModule.Ram.init(&btn);
+    ram = memoryModule.Ram.init(&btn, &tmrs);
     instructionModule.init();
 }
 

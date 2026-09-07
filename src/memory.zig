@@ -13,11 +13,33 @@ pub const Game = struct {
 };
 pub const Vram = struct {
     vram: [2][0x2000]u8,
+    vbk: u1,
 
     pub fn init() Vram {
-        return Vram{ .vram = std.mem.zeroes([2][0x2000]u8) };
+        return Vram{ .vram = std.mem.zeroes([2][0x2000]u8), .vbk = 0 };
+    }
+
+    //TODO implemt the 2 differen ways of addressing vram
+    //implement how to read tiles
+    pub fn vramRead(self: *Ram, address: u16) u8 {
+        const vbkValue = self.read(constants.vbk) & 0x01;
+        return self.vram.vram[vbkValue][address];
+    }
+
+    pub fn vramWrite(self: *Ram, address: u16, value: u8) void {
+        const vbkValue = self.read(constants.vbk) & 0x01;
+        self.vram.vram[vbkValue][address] = value;
+    }
+
+    pub fn setVbk(self: *Vram, value: u8) void {
+        self.vbk = @truncate(value);
+    }
+
+    pub fn readVbk(self: *Vram) u8 {
+        //implement vbk read
     }
 };
+
 pub const Wram = struct {
     wram: [8][4096]u8,
     bank: u8,
@@ -72,7 +94,7 @@ pub const Ram = struct {
                 //this gonna be a pain to understand and implement all types
             },
             0x8000...0x9FFF => {
-                result = self.vramRead(address - 0x8000);
+                result = self.vram.vramRead(address - 0x8000);
             },
             0xA000...0xBFFF => {
                 //from cartridge switchable
@@ -140,7 +162,7 @@ pub const Ram = struct {
                 //this gonna be a pain to understand and implement all types
             },
             0x8000...0x9FFF => {
-                self.vramWrite(address - 0x8000, value);
+                self.vram.vramWrite(address - 0x8000, value);
             },
             0xA000...0xBFFF => {
                 //from cartridge switchable
@@ -172,17 +194,6 @@ pub const Ram = struct {
                 self.interruptReg = value;
             },
         }
-    }
-
-    //TODO implemt the 2 differen ways of addressing vram
-    //implement how to read tiles
-    fn vramRead(self: *Ram, address: u16) u8 {
-        const vbkValue = self.read(constants.vbk) & 0x01;
-        return self.vram.vram[vbkValue][address];
-    }
-    fn vramWrite(self: *Ram, address: u16, value: u8) void {
-        const vbkValue = self.read(constants.vbk) & 0x01;
-        self.vram.vram[vbkValue][address] = value;
     }
 
     //not the best using one for reading and writing but it would be
@@ -243,6 +254,15 @@ pub const Ram = struct {
                     return 0;
                 } else {
                     return self.ifRegister;
+                }
+            },
+            0xFF4F => {
+                //vbk
+                if (isWrite) {
+                    self.vram.setVbk();
+                    return 0;
+                } else {
+                    self.vram.readVbk();
                 }
             },
             else => {

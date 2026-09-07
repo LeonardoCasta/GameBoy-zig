@@ -7,8 +7,8 @@ const Btns = @import("btns.zig").Btns;
 const Timers = @import("timer.zig").Timers;
 const cpuClock = 4194304;
 const cpuDoubleClock = 8328608;
-const cpuClockTimeElapsed = 1 / cpuClock;
-const cpuDoubleClockTimeElapsed = 1 / cpuDoubleClock;
+const cpuClockTimeElapsed: f128 = 1 / cpuClock;
+const cpuDoubleClockTimeElapsed: f128 = 1 / cpuDoubleClock;
 
 pub fn main(init: std.process.Init) void {
     // see how to handle raylib, maybe in his own file or something
@@ -24,7 +24,7 @@ pub fn main(init: std.process.Init) void {
 
     //boot sequence
     //try boot.boot();
-    var selectedClock = cpuClockTimeElapsed;
+    var selectedClock: f128 = cpuClockTimeElapsed;
     while (!ray.WindowShouldClose()) {
         timer += ray.GetFrameTime();
         if (timer >= selectedClock) {

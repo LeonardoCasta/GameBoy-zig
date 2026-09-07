@@ -20,9 +20,9 @@ pub fn testInit() void {
     instructionModule.init();
 }
 
-pub fn init(io: std.Io, btns: *Btns) void {
+pub fn init(io: std.Io, btns: *Btns, tmrs: *Timers) void {
     cpu = cpuModule.Cpu.init();
-    ram = memoryModule.Ram.init(btns);
+    ram = memoryModule.Ram.init(btns, tmrs);
 
     //when testing i dont want to load the file
     _ = std.Io.Dir.readFile(std.Io.Dir.cwd(), io, "./Games/Pokemon", &ram.game.game) catch {

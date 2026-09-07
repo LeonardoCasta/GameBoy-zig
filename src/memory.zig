@@ -43,14 +43,20 @@ pub const Ram = struct {
     btns: *Btns,
     timers: *Timers,
     interruptReg: u8,
+    ifRegister: u8,
+    isDoubleSpeed: bool,
 
     pub fn init(btnsRef: *Btns, timersRef: *Timers) Ram {
-        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .timers = timersRef, .interruptReg = 0 };
+        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .timers = timersRef, .interruptReg = 0, .ifRegister = 0, .isDoubleSpeed = false };
     }
 
     fn unmappedRead() u8 {
         //for now i don't know how to handle unused bytes
         return 0;
+    }
+
+    pub fn setIfRegister(self: *Ram, byte: u8) void {
+        self.write(0xFF0F, byte);
     }
 
     pub fn read(self: *Ram, address: u16) u8 {
@@ -229,6 +235,15 @@ pub const Ram = struct {
                     self.timers.setTac(value);
                     return 0;
                 } else {}
+            },
+            0xFF0F => {
+                //if interrupt flag
+                if (isWrite) {
+                    self.ifRegister |= value;
+                    return 0;
+                } else {
+                    return self.ifRegister;
+                }
             },
             else => {
                 //FF01 serial transfer not implemented for now

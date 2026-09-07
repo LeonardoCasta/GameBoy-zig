@@ -64,6 +64,8 @@ pub const Timers = struct {
         self.timer +%= tCycles;
         if (self.enable == 1) {
             //increase tima
+            //get time bit to follow and save value
+            //add to timer the see if it changed
         }
     }
 };

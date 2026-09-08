@@ -21,14 +21,12 @@ pub const Vram = struct {
 
     //TODO implemt the 2 differen ways of addressing vram
     //implement how to read tiles
-    pub fn vramRead(self: *Ram, address: u16) u8 {
-        const vbkValue = self.read(constants.vbk) & 0x01;
-        return self.vram.vram[vbkValue][address];
+    pub fn read(self: *Vram, address: u16) u8 {
+        return self.vram[self.vbk][address];
     }
 
-    pub fn vramWrite(self: *Ram, address: u16, value: u8) void {
-        const vbkValue = self.read(constants.vbk) & 0x01;
-        self.vram.vram[vbkValue][address] = value;
+    pub fn write(self: *Vram, address: u16, value: u8) void {
+        self.vram[self.vbk][address] = value;
     }
 
     pub fn setVbk(self: *Vram, value: u8) void {
@@ -37,6 +35,7 @@ pub const Vram = struct {
 
     pub fn readVbk(self: *Vram) u8 {
         //implement vbk read
+        return self.vbk;
     }
 };
 
@@ -94,7 +93,7 @@ pub const Ram = struct {
                 //this gonna be a pain to understand and implement all types
             },
             0x8000...0x9FFF => {
-                result = self.vram.vramRead(address - 0x8000);
+                result = self.vram.read(address - 0x8000);
             },
             0xA000...0xBFFF => {
                 //from cartridge switchable
@@ -162,7 +161,7 @@ pub const Ram = struct {
                 //this gonna be a pain to understand and implement all types
             },
             0x8000...0x9FFF => {
-                self.vram.vramWrite(address - 0x8000, value);
+                self.vram.write(address - 0x8000, value);
             },
             0xA000...0xBFFF => {
                 //from cartridge switchable
@@ -219,7 +218,8 @@ pub const Ram = struct {
             0xFF04 => {
                 //div
                 if (isWrite) {
-                    self.timers.resetDiv();
+                    const result = self.timers.resetDiv();
+                    self.setIfRegister(result);
                     return 0;
                 } else {
                     return self.timers.getDiv();
@@ -243,7 +243,8 @@ pub const Ram = struct {
             0xFF07 => {
                 //tac time control
                 if (isWrite) {
-                    self.timers.setTac(value);
+                    const result: u8 = self.timers.setTac(value);
+                    self.setIfRegister(result);
                     return 0;
                 } else {}
             },
@@ -259,10 +260,10 @@ pub const Ram = struct {
             0xFF4F => {
                 //vbk
                 if (isWrite) {
-                    self.vram.setVbk();
+                    self.vram.setVbk(value);
                     return 0;
                 } else {
-                    self.vram.readVbk();
+                    return self.vram.readVbk();
                 }
             },
             else => {

@@ -16,7 +16,7 @@ pub const Timers = struct {
         const result: u8 = @truncate(self.timer >> 8);
         return result;
     }
-    pub fn resetDiv(self: *Timers) void {
+    pub fn resetDiv(self: *Timers) u8 {
         const bitBefore = getTimaBit(self);
         self.timer = 0;
         if (self.enable == 1 and bitBefore == 1) {
@@ -27,6 +27,7 @@ pub const Timers = struct {
                 return 0b00000100;
             }
         }
+        return 0;
     }
 
     pub fn resetTima(self: *Timers) void {
@@ -41,12 +42,13 @@ pub const Timers = struct {
         self.tma = value;
     }
 
-    pub fn setTac(self: *Timers, value: u8) void {
-        self.setEnable(value);
+    pub fn setTac(self: *Timers, value: u8) u8 {
+        const result = self.setEnable(value);
         self.setClockSelect(value);
+        return result;
     }
 
-    pub fn setEnable(self: *Timers, byte: u8) void {
+    pub fn setEnable(self: *Timers, byte: u8) u8 {
         const enableValue: u1 = @truncate(byte & 0b00000100);
         const oldEnable = self.enable;
         self.enable = enableValue;
@@ -59,6 +61,7 @@ pub const Timers = struct {
                 return 0b00000100;
             }
         }
+        return 0;
     }
 
     pub fn setClockSelect(self: *Timers, byte: u8) void {
@@ -81,9 +84,10 @@ pub const Timers = struct {
 
     pub fn update(self: *Timers, tCycles: u8) u8 {
         // need to implement double speed mode in exec
-        while (tCycles > 0) {
+        var counter = tCycles;
+        while (counter > 0) {
             const bitBefore = getTimaBit(self);
-            self.timer +%= tCycles;
+            self.timer +%= 1;
             if (self.enable == 1) {
                 const bitAfter = getTimaBit(self);
                 if (bitBefore == 1 and bitAfter == 0) {
@@ -95,7 +99,7 @@ pub const Timers = struct {
                     }
                 }
             }
-            tCycles -= 1;
+            counter -= 1;
         }
         return 0;
     }

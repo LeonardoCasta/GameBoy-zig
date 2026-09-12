@@ -71,3 +71,19 @@ test "read but both true or false returns all 0" {
     ram.write(0xFF00, 0x00);
     try expect(button.readBtns() == 0b00000000);
 }
+
+fn initRam() exe.memoryModule.Ram {
+    var button = exe.Btns.init();
+    var tmrs = exe.Timers.init();
+    return exe.memoryModule.Ram.init(&button, &tmrs);
+}
+
+test "Timers simple increment" {
+    var ram = initRam();
+    const ret1 = ram.timers.update(255);
+    const ret2 = ram.timers.update(255);
+    std.debug.print("{}\n", .{ram.timers.timer});
+    try expect(ram.timers.timer == 510);
+    try expect(ret1 == 0);
+    try expect(ret2 == 0);
+}

@@ -108,9 +108,20 @@ test "tima timer test" {
     try expect(tmrs.enable == 1);
     try expect(tmrs.clockSelect == 0b01);
     _ = ram.timers.update(3);
+    try expect(tmrs.tima == 0);
     _ = ram.timers.update(1);
     try expect(tmrs.tima == 1);
     _ = ram.timers.update(2);
     ram.write(0xFF07, 0b00000001);
     try expect(tmrs.tima == 2);
+}
+
+test "tma timer test" {
+    var tmrs = exe.Timers.init();
+    var ram = initRam(&tmrs);
+    ram.write(0xFF07, 0b00000101);
+    ram.write(0xFF06, 0x33);
+    tmrs.tima = 255;
+    _ = ram.timers.update(4);
+    try expect(tmrs.tima == 0x33);
 }

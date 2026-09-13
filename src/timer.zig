@@ -12,6 +12,10 @@ pub const Timers = struct {
         return Timers{ .timer = 0, .tima = 0, .tma = 0, .clockSelect = 0, .enable = 0, .isDoubleSpeed = 0 };
     }
 
+    pub fn getTimer(self: *Timers) u16 {
+        return self.timer;
+    }
+
     pub fn getDiv(self: *Timers) u8 {
         const result: u8 = @truncate(self.timer >> 8);
         return result;
@@ -49,11 +53,11 @@ pub const Timers = struct {
     }
 
     pub fn setEnable(self: *Timers, byte: u8) u8 {
-        const enableValue: u1 = @truncate(byte & 0b00000100);
         const oldEnable = self.enable;
+        const enableValue: u1 = @truncate((byte & 0b00000100) >> 2);
         self.enable = enableValue;
         const bitBefore = getTimaBit(self);
-        if (bitBefore == 1 and oldEnable == 1 and self.enable == 1) {
+        if (bitBefore == 1 and oldEnable == 1 and self.enable == 0) {
             const res, const overflow = @addWithOverflow(self.tima, 1);
             self.tima = res;
             if (overflow == 1) {

@@ -72,18 +72,45 @@ test "read but both true or false returns all 0" {
     try expect(button.readBtns() == 0b00000000);
 }
 
-fn initRam() exe.memoryModule.Ram {
+fn initRam(tmrs: *exe.Timers) exe.memoryModule.Ram {
     var button = exe.Btns.init();
-    var tmrs = exe.Timers.init();
-    return exe.memoryModule.Ram.init(&button, &tmrs);
+    return exe.memoryModule.Ram.init(&button, tmrs);
 }
 
 test "Timers simple increment" {
-    var ram = initRam();
-    const ret1 = ram.timers.update(255);
-    const ret2 = ram.timers.update(255);
-    std.debug.print("{}\n", .{ram.timers.timer});
-    try expect(ram.timers.timer == 510);
+    var tmrs = exe.Timers.init();
+    var ram = initRam(&tmrs);
+    const timer = ram.timers.getTimer();
+    try expect(timer == 0);
+    const ret1 = ram.timers.update(1);
+    const ret2 = ram.timers.update(1);
+    try expect(ram.timers.timer == 2);
     try expect(ret1 == 0);
     try expect(ret2 == 0);
+}
+
+test "div timer test" {
+    var tmrs = exe.Timers.init();
+    var ram = initRam(&tmrs);
+    _ = ram.timers.update(255);
+    _ = ram.timers.update(1);
+    try expect(tmrs.getDiv() == 1);
+    ram.write(0xFF04, 11);
+    try expect(tmrs.getDiv() == 0);
+}
+
+test "tima timer test" {
+    var tmrs = exe.Timers.init();
+    var ram = initRam(&tmrs);
+    try expect(tmrs.enable == 0);
+    try expect(tmrs.clockSelect == 0b00);
+    ram.write(0xFF07, 0b00000101);
+    try expect(tmrs.enable == 1);
+    try expect(tmrs.clockSelect == 0b01);
+    _ = ram.timers.update(3);
+    _ = ram.timers.update(1);
+    try expect(tmrs.tima == 1);
+    _ = ram.timers.update(2);
+    ram.write(0xFF07, 0b00000001);
+    try expect(tmrs.tima == 2);
 }

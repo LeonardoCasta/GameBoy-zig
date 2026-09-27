@@ -79,6 +79,8 @@ pub const Graphic = struct {
         ray.DrawTexture(if (!btns.a) aTexture else aPressedTexture, 544 - 13, 661 - 9, ray.WHITE);
         ray.DrawTexture(if (!btns.b) bTexture else bPressedTexture, 423 - 7, 715 - 9, ray.WHITE);
         ray.DrawTexture(if (!(btns.up or btns.down or btns.left or btns.right)) dpadTexture else dpadPressedTexture, 78 - 6, 644 - 8, ray.WHITE);
+
+        //add screen draw
         ray.EndDrawing();
     }
 

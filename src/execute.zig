@@ -6,6 +6,7 @@ pub const memoryModule = @import("memory.zig");
 const instructionModule = @import("instructions.zig");
 pub const Btns = @import("btns.zig").Btns;
 pub const Timers = @import("timer.zig").Timers;
+pub const Ppu = @import("ppu.zig").Ppu;
 
 pub var cpu: cpuModule.Cpu = undefined;
 pub var ram: memoryModule.Ram = undefined;
@@ -15,14 +16,15 @@ pub var isJp: bool = false;
 pub fn testInit() void {
     var btn = Btns.init();
     var tmrs = Timers.init();
+    var ppu = Ppu.init();
     cpu = cpuModule.Cpu.init();
-    ram = memoryModule.Ram.init(&btn, &tmrs);
+    ram = memoryModule.Ram.init(&btn, &tmrs, &ppu);
     instructionModule.init();
 }
 
-pub fn init(io: std.Io, btns: *Btns, tmrs: *Timers) void {
+pub fn init(io: std.Io, btns: *Btns, tmrs: *Timers, ppu: *Ppu) void {
     cpu = cpuModule.Cpu.init();
-    ram = memoryModule.Ram.init(btns, tmrs);
+    ram = memoryModule.Ram.init(btns, tmrs, ppu);
 
     //when testing i dont want to load the file
     _ = std.Io.Dir.readFile(std.Io.Dir.cwd(), io, "./Games/Pokemon", &ram.game.game) catch {

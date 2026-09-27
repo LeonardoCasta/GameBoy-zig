@@ -3,6 +3,7 @@ const constants = @import("registersConstants.zig");
 const builtint = @import("builtin");
 const Btns = @import("btns.zig").Btns;
 const Timers = @import("timer.zig").Timers;
+const Ppu = @import("ppu.zig").Ppu;
 
 pub const Game = struct {
     game: [1_000_000]u8,
@@ -63,12 +64,13 @@ pub const Ram = struct {
     highRam: [0x7E]u8,
     btns: *Btns,
     timers: *Timers,
+    ppu: *Ppu,
     interruptReg: u8,
     ifRegister: u8,
     isDoubleSpeed: bool,
 
-    pub fn init(btnsRef: *Btns, timersRef: *Timers) Ram {
-        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .timers = timersRef, .interruptReg = 0, .ifRegister = 0, .isDoubleSpeed = false };
+    pub fn init(btnsRef: *Btns, timersRef: *Timers, ppuRef: *Ppu) Ram {
+        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .timers = timersRef, .ppu = ppuRef, .interruptReg = 0, .ifRegister = 0, .isDoubleSpeed = false };
     }
 
     fn unmappedRead() u8 {
@@ -255,6 +257,15 @@ pub const Ram = struct {
                     return 0;
                 } else {
                     return self.ifRegister;
+                }
+            },
+            0xFF40 => {
+                //lcdc
+                if (isWrite) {
+                    self.ppu.setLcdc(value);
+                    return 0;
+                } else {
+                    return self.vram.setLcdc();
                 }
             },
             0xFF4F => {

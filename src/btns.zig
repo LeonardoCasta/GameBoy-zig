@@ -7,8 +7,8 @@ pub const Btns = struct {
     // TODO make all keys configurable
     start: bool, // g
     select: bool, // b
-    b: bool, // v
-    a: bool, // c
+    b: bool, // c
+    a: bool, // v
     down: bool, // d
     up: bool, // e
     left: bool, // s
@@ -23,8 +23,8 @@ pub const Btns = struct {
     pub fn update(self: *Btns) void {
         self.start = ray.IsKeyDown(ray.KEY_G);
         self.select = ray.IsKeyDown(ray.KEY_B);
-        self.b = ray.IsKeyDown(ray.KEY_V);
-        self.a = ray.IsKeyDown(ray.KEY_C);
+        self.b = ray.IsKeyDown(ray.KEY_C);
+        self.a = ray.IsKeyDown(ray.KEY_V);
         self.down = ray.IsKeyDown(ray.KEY_D);
         self.up = ray.IsKeyDown(ray.KEY_E);
         self.left = ray.IsKeyDown(ray.KEY_S);

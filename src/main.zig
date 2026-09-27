@@ -10,7 +10,7 @@ const cpuDoubleClockTimeElapsed: f128 = 1 / cpuDoubleClock;
 
 pub fn main(init: std.process.Init) void {
     // raylib graphic init
-    var x = Graphic.init();
+    Graphic.init();
 
     var timer: f128 = 0;
 
@@ -22,32 +22,32 @@ pub fn main(init: std.process.Init) void {
     //boot sequence
     //try boot.boot();
     var selectedClock: f128 = cpuClockTimeElapsed;
-    while (!x.WindowShouldClose()) {
-        timer += x.GetFrameTime();
+    while (!Graphic.WindowShouldClose()) {
+        timer += Graphic.GetFrameTime();
         if (timer >= selectedClock) {
-            //update buttons
             btns.update();
-            //execute instruction
-            const tCycles = exec.execute() * 4;
+            if (false) {
+                //update buttons
+                btns.update();
+                //execute instruction
+                const tCycles = exec.execute() * 4;
 
-            //advance all other components cpuCycles
-            const result: u8 = timers.update(tCycles);
-            exec.ram.setIfRegister(result);
+                //advance all other components cpuCycles
+                const result: u8 = timers.update(tCycles);
+                exec.ram.setIfRegister(result);
 
-            timer -= tCycles * cpuClockTimeElapsed;
+                timer -= tCycles * cpuClockTimeElapsed;
 
-            if (exec.ram.isDoubleSpeed) {
-                selectedClock = cpuDoubleClockTimeElapsed;
-            } else {
-                selectedClock = cpuClockTimeElapsed;
+                if (exec.ram.isDoubleSpeed) {
+                    selectedClock = cpuDoubleClockTimeElapsed;
+                } else {
+                    selectedClock = cpuClockTimeElapsed;
+                }
             }
-            return;
-
             //raylib related things
-            //ray.BeginDrawing();
-            //ray.ClearBackground(ray.RAYWHITE);
-            //ray.EndDrawing();
+            Graphic.draw(&btns);
+            timer = 0;
         }
     }
-    x.CloseWindow();
+    Graphic.CloseWindow();
 }

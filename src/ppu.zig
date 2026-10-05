@@ -1,6 +1,8 @@
 const std = @import("std");
+const State = enum { mode0, mode1, mode2, mode3 };
 
 pub const Ppu = struct {
+    state: State,
     cycles: u16,
     lcdc: u8,
     scy: u8,
@@ -11,29 +13,35 @@ pub const Ppu = struct {
     bgp: u8,
     obp0: u8,
     obp1: u8,
-    mode0: bool,
-    mode1: bool,
-    mode2: bool,
-    mode3: bool,
+    execState: bool,
 
     pub fn init() Ppu {
-        return Ppu{};
+        return Ppu{ .execState = true };
     }
 
     pub fn update(self: *Ppu, Tcycles: u8) void {
         self.cycles += Tcycles;
-        if (self.cycles >= 0 and self.cycles <= 80) {
-            //execute mode 2 if not executes before
-            self.mode0 = false;
-            self.mode1 = false;
-            self.mode2 = true;
-            self.mode3 = false;
-        } else {
-            //execute mode 3 return and do mode 0
-            self.mode0 = false;
-            self.mode1 = false;
-            self.mode2 = false;
-            self.mode3 = true;
+        switch (self.state) {
+            State.mode0 => {
+                if (!self.execState) {
+                    return;
+                }
+            },
+            State.mode1 => {
+                if (!self.execState) {
+                    return;
+                }
+            },
+            State.mode2 => {
+                if (!self.execState) {
+                    return;
+                }
+            },
+            State.mode3 => {
+                if (!self.execState) {
+                    return;
+                }
+            },
         }
     }
 

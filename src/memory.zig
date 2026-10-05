@@ -265,7 +265,79 @@ pub const Ram = struct {
                     self.ppu.setLcdc(value);
                     return 0;
                 } else {
-                    return self.vram.setLcdc();
+                    return self.ppu.setLcdc();
+                }
+            },
+            0xFF41 => {
+                //stat
+                if (isWrite) {
+                    self.ppu.setStat(value);
+                    return 0;
+                } else {
+                    return self.ppu.setStat();
+                }
+            },
+            0xFF42 => {
+                //scy
+                if (isWrite) {
+                    self.ppu.setScy(value);
+                    return 0;
+                } else {
+                    return self.ppu.setScy();
+                }
+            },
+            0xFF43 => {
+                //scx
+                if (isWrite) {
+                    self.ppu.setScx(value);
+                    return 0;
+                } else {
+                    return self.ppu.setScx();
+                }
+            },
+            0xFF44 => {
+                //ly
+                if (isWrite) {
+                    self.ppu.setLy(value);
+                    return 0;
+                } else {
+                    return self.ppu.setLy();
+                }
+            },
+            0xFF45 => {
+                //lyc
+                if (isWrite) {
+                    self.ppu.setLyc(value);
+                    return 0;
+                } else {
+                    return self.ppu.setLyc();
+                }
+            },
+            0xFF47 => {
+                //bgp
+                if (isWrite) {
+                    self.ppu.setBgp(value);
+                    return 0;
+                } else {
+                    return self.ppu.setBgp();
+                }
+            },
+            0xFF48 => {
+                //obp0
+                if (isWrite) {
+                    self.ppu.setObp0(value);
+                    return 0;
+                } else {
+                    return self.ppu.setObp0();
+                }
+            },
+            0xFF49 => {
+                //obp1
+                if (isWrite) {
+                    self.ppu.setObp1(value);
+                    return 0;
+                } else {
+                    return self.ppu.setObp1();
                 }
             },
             0xFF4F => {

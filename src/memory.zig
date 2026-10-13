@@ -14,10 +14,11 @@ pub const Game = struct {
 };
 pub const Vram = struct {
     vram: [2][0x2000]u8,
+    accessible: bool,
     vbk: u1,
 
     pub fn init() Vram {
-        return Vram{ .vram = std.mem.zeroes([2][0x2000]u8), .vbk = 0 };
+        return Vram{ .vram = std.mem.zeroes([2][0x2000]u8), .accessible = true, .vbk = 0 };
     }
 
     //TODO implemt the 2 differen ways of addressing vram
@@ -57,10 +58,31 @@ pub const Wram = struct {
     }
 };
 
+pub const Oam = struct {
+    oem: [0x9F]u8,
+    accessible: bool,
+
+    pub fn init() Oam {
+        return Oam{ .oem = std.mem.zeroes([0x9F]u8), .accessible = true };
+    }
+
+    pub fn read(self: *Oam, address: u8) u8 {
+        return self.oem[address];
+    }
+
+    pub fn write(self: *Oam, address: u8, value: u8) void {
+        if (!self.accessible)
+            return;
+
+        self.oem[address] = value;
+    }
+};
+
 pub const Ram = struct {
     game: Game,
     wram: Wram,
     vram: Vram,
+    oam: Oam,
     highRam: [0x7E]u8,
     btns: *Btns,
     timers: *Timers,
@@ -70,7 +92,7 @@ pub const Ram = struct {
     isDoubleSpeed: bool,
 
     pub fn init(btnsRef: *Btns, timersRef: *Timers, ppuRef: *Ppu) Ram {
-        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .timers = timersRef, .ppu = ppuRef, .interruptReg = 0, .ifRegister = 0, .isDoubleSpeed = false };
+        return Ram{ .game = Game.init(), .wram = Wram.init(), .vram = Vram.init(), .oam = Oam.init(), .highRam = std.mem.zeroes([0x7E]u8), .btns = btnsRef, .timers = timersRef, .ppu = ppuRef, .interruptReg = 0, .ifRegister = 0, .isDoubleSpeed = false };
     }
 
     fn unmappedRead() u8 {
@@ -116,6 +138,7 @@ pub const Ram = struct {
             },
             0xFE00...0xFE9F => {
                 //object attribute memory
+                self.oam.read(@truncate(address));
             },
             0xFEA0...0xFEFF => {
                 result = 0;
@@ -179,6 +202,7 @@ pub const Ram = struct {
             },
             0xFE00...0xFE9F => {
                 //object attribute memory
+                self.oam.write(@truncate(address), value);
             },
             0xFEA0...0xFEFF => {
                 std.debug.print("memory not addressable\n", .{});

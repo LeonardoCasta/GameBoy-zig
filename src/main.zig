@@ -19,6 +19,7 @@ pub fn main(init: std.process.Init) void {
     var ppu: Ppu = Ppu.init();
     const io = init.io;
     exec.init(io, &btns, &timers, &ppu);
+    ppu.initialMode2Exec(exec.ram.oam);
 
     //boot sequence
     //try boot.boot();
@@ -36,6 +37,7 @@ pub fn main(init: std.process.Init) void {
                 //advance all other components cpuCycles
                 const result: u8 = timers.update(tCycles);
                 exec.ram.setIfRegister(result);
+                ppu.update(tCycles, exec.ram.oam, exec.ram.oam);
 
                 timer -= tCycles * cpuClockTimeElapsed;
 

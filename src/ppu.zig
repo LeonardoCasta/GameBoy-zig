@@ -23,6 +23,9 @@ pub const Ppu = struct {
         ppu.execState = true;
         return ppu;
     }
+    pub fn initialMode2Exec(self: *Ppu, oam: *Oam) void {
+        self.executeMode2(oam);
+    }
 
     //every frame is divided into rows then every row is draw
     //it starts with mode2 scanning the OEM and last 80 cycles
@@ -84,50 +87,26 @@ pub const Ppu = struct {
         if (self.ly == self.lyc) {
             //idk yet
         }
+    }
 
-        switch (self.state) {
-            State.mode0 => {
-                if (!self.execState) {
-                    return;
-                }
-                //line is done wait and reset all i need to reset
-                @memset(&lineSprite, 0xFF);
-            },
-            State.mode1 => {
-                if (!self.execState) {
-                    return;
-                }
-            },
-            State.mode2 => {
-                if (!self.execState) {
-                    return;
-                }
-                //scan oem for sprites and seve the first 10
-                //if ly == oam.y - 16 then is visible in that line
-                var spriteCount: u8 = 0;
-                var i: usize = 0;
-                while (i < 40) : (i += 4) {
-                    const spriteLength: i16 = if (self.getLcdcBit(2) == 0) 8 else 16;
-                    const spriteY: i16 = oam.oam[i] - 16;
-                    //not in the row
-                    if (!(self.ly >= spriteY and self.ly < spriteY + spriteLength))
-                        continue;
-                    if (spriteCount >= 10)
-                        break;
+    pub fn executeMode2(self: *Ppu, oam: *Oam) void {
+        //scan oem for sprites and seve the first 10
+        //if ly == oam.y - 16 then is visible in that line
+        var spriteCount: u8 = 0;
+        var i: usize = 0;
+        while (i < 40) : (i += 4) {
+            const spriteLength: i16 = if (self.getLcdcBit(2) == 0) 8 else 16;
+            const spriteY: i16 = oam.oam[i] - 16;
+            //not in the row
+            if (!(self.ly >= spriteY and self.ly < spriteY + spriteLength))
+                continue;
+            if (spriteCount >= 10)
+                break;
 
-                    //save sprite to list and increase count
-                    lineSprite[spriteCount] = i;
-                    spriteCount += 1;
-                }
-                self.execState = false;
-            },
-            State.mode3 => {
-                if (!self.execState) {
-                    //if mode finish incremente ly
-                    return;
-                }
-            },
-            State.start => return,
+            //save sprite to list and increase count
+            //need to reset these ones at the end of mode0
+            lineSprite[spriteCount] = i;
+            spriteCount += 1;
         }
     }
 
